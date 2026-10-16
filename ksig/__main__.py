@@ -30,15 +30,21 @@ def _gh_output(**kv) -> None:
                 fh.write(f"{k}={v}\n")
 
 
+def _update_and_record(cfg: dict, full: bool = False):
+    reports = update_all(cfg, full=full)
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    (STATE_DIR / "data_status.json").write_text(
+        json.dumps([r.__dict__ for r in reports], indent=2, ensure_ascii=False))
+    return reports
+
+
 def _research_or_cached(cfg: dict) -> dict:
     return run_research(cfg)
 
 
 def cmd_daily(cfg: dict, notify: bool = True, fetch: bool = True) -> int:
     if fetch:
-        reports = update_all(cfg)
-        STATE_DIR.mkdir(parents=True, exist_ok=True)
-        (STATE_DIR / "data_status.json").write_text(json.dumps([r.__dict__ for r in reports], indent=2, ensure_ascii=False))
+        reports = _update_and_record(cfg)
         if any(r.rows == 0 for r in reports):
             print("Mangler data for minst én coin – avbryter.", file=sys.stderr)
             return 1
@@ -93,9 +99,10 @@ def main(argv=None) -> int:
     cfg = load_config()
 
     if args.cmd == "update-data":
-        for r in update_all(cfg, full=args.full):
+        reports = _update_and_record(cfg, full=args.full)
+        for r in reports:
             print(r)
-        return 0
+        return 0 if all(r.rows > 0 for r in reports) else 1
     if args.cmd == "research":
         res = run_research(cfg)
         print(f"Lagret {RESULTS_DIR / 'research.json'}")
