@@ -22,7 +22,8 @@ strategy = { type = "sma_band", n = 150, band = 0.02, check = "daily" }
 symbol = "ETH-USD"
 short = "ETH"
 name = "Ethereum"
-strategy = { type = "ens_sma", set = "middels", floor = 0.5, check = "weekly" }
+# Spesifikasjon: dokumentet "ETH-strategi: design og spesifikasjon" og research/eth_design.py
+strategy = { type = "ens_regime", set = "middels", regime = "BTC-USD", regime_set = "middels", check = "weekly" }
 
 [[assets]]
 symbol = "SOL-USD"

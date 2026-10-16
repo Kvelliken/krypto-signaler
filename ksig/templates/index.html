@@ -169,7 +169,7 @@ const SERIES = [
   { key: 'strategy', name: 'Strategi', color: '--s1', width: 2 },
   { key: 'buy_hold', name: 'Kjøp og hold', color: '--s2', width: 1.5 },
 ];
-const fmtVal = (kind, v) => kind === 'money' ? money(v) : kind === 'pct_signed' ? pct(v, 1, true)
+const fmtVal = (kind, v) => kind === 'text' ? esc(v) : kind === 'pct' ? tpct(v) : kind === 'money' ? money(v) : kind === 'pct_signed' ? pct(v, 1, true)
   : kind === 'check' ? (v ? '<span class="ok">Ja</span>' : '<span class="nok">Nei</span>') : nf(v, 0);
 const cls = (kind, v) => kind === 'pct_signed' && v != null ? (v >= 0 ? 'pos' : 'neg') : '';
 function stateLabel(t) { return t >= 1 ? 'Fullt investert' : t > 0 ? 'Delvis investert' : 'Ute av markedet'; }
@@ -311,7 +311,7 @@ metricsTable('pf-table', SERIES.map(s => [s.name, PF.metrics[s.key], s.key === '
 const tabs = document.getElementById('tabs'), panel = document.getElementById('asset-panel');
 let assetCharts = [];
 const DIM_NAMES = { n: 'SMA-lengde', band: 'Bånd', set: 'Sett', floor: 'Kjerne', fast: 'Rask EMA', slow: 'Treg EMA',
-  entry: 'Kjøp (døgn)', exit: 'Salg (døgn)', lookback: 'Periode', stop: 'Stopp', reentry: 'Inn over SMA' };
+  entry: 'Kjøp (døgn)', exit: 'Salg (døgn)', lookback: 'Periode', stop: 'Stopp', reentry: 'Inn over SMA', regime_set: 'BTC-sett' };
 const dimFmt = (k, v) => ['band', 'floor', 'stop'].includes(k) ? pct(v, 0) : esc(v);
 const PERIOD_NAMES = { full: 'Hele perioden', dev: 'Før hold-out', holdout: 'Hold-out' };
 
@@ -402,6 +402,7 @@ document.getElementById('method').innerHTML = `
     <li>Alle tall er etter Firi-kostnader (${pct(R.costs.fee + R.costs.slippage, 1)} per handel) og med handel døgnet etter signalet.</li>
     <li>Kravet var høyere årlig avkastning enn kjøp og hold <i>og</i> mindre maks fall – både før og etter ${R.holdout_start}.</li>
     <li>En regel ble bare godtatt hvis nabo-parameterne også gjorde det bra, og hvis den tålte høyere kostnader og forsinket handel.</li>
+    <li>ETH-regelen ble utformet separat ut fra fire forhåndsdefinerte hypoteser (egen trend, BTC som markedsregime, relativ styrke ETH/BTC og volatilitet). BTC-trenden som markedsfilter var den eneste som ga klar forbedring. Se <code>research/eth_design.py</code>.</li>
   </ol>${wfText}`;
 
 // ---------- Fallgruver ----------

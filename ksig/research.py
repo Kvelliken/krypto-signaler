@@ -24,6 +24,7 @@ BH = "buy_hold"
 
 # Nabolagskart per familie: (dim1, verdier), (dim2, verdier)
 NEIGHBOR_DIMS = {
+    "ens_regime": (("set", ["kort", "middels", "lang"]), ("regime_set", ["kort", "middels", "lang"])),
     "sma_band": (("n", [100, 125, 150, 175, 200, 250]), ("band", [0.0, 0.01, 0.02, 0.03, 0.05])),
     "ens_sma": (("set", ["kort", "middels", "lang"]), ("floor", [0.0, 0.25, 0.5])),
     "ens_mom": (("set", ["kort", "middels", "lang"]), ("floor", [0.0, 0.25, 0.5])),

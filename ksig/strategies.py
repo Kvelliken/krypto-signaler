@@ -262,7 +262,79 @@ def _sma_rsi_display(row, p):
             ("RSI", "num", row["rsi"])]
 
 
+# ---------------------------------------------------------------------------
+# 7. Egen trend × markedsregime (f.eks. ETH × BTC-trend)
+#    Spesifikasjon: dokumentet "ETH-strategi: design og spesifikasjon" og research/eth_design.py
+# ---------------------------------------------------------------------------
+def _regime_short(symbol: str) -> str:
+    return symbol.split("-")[0]
+
+
+def _load_regime(symbol: str, index: pd.DatetimeIndex) -> pd.Series:
+    from .data import load_prices  # sen import for å unngå sirkulær import
+    return load_prices(symbol)["Close"].reindex(index).ffill()
+
+
+def ens_regime(close: pd.Series, set: str = "middels", regime: str = "BTC-USD",
+               regime_set: str | None = None, regime_close: pd.Series | None = None) -> pd.DataFrame:
+    """Målandel = T × B / 16 avrundet til nærmeste 1/8 (halvdeler til partall).
+
+    T = antall av snittene i `set` som egen pris er strengt over (0–4)
+    B = antall av snittene i `regime_set` som regimets pris er strengt over (0–4)
+    """
+    wins, rwins = SMA_SETS[set], SMA_SETS[regime_set or set]
+    other = regime_close if regime_close is not None else _load_regime(regime, close.index)
+    cols = {}
+
+    def votes(series: pd.Series, ns, prefix: str) -> pd.Series:
+        v = []
+        for n in ns:
+            m = series.rolling(n, min_periods=n).mean()
+            cols[f"{prefix}{n}"] = m
+            v.append((series > m).astype(float).where(m.notna()))
+        return pd.concat(v, axis=1).mean(axis=1, skipna=False)
+
+    T = votes(close, wins, "sma")
+    B = votes(other, rwins, "rsma")
+    raw = (np.round(T * B * 8) / 8).fillna(0.0)
+    return pd.DataFrame({"target": raw, "raw_target": raw, "own_votes": T * len(wins),
+                         "regime_votes": B * len(rwins), "regime_close": other, **cols}, index=close.index)
+
+
+def _ens_regime_rules(p):
+    wins = SMA_SETS[p.get("set", "middels")]
+    rwins = SMA_SETS[p.get("regime_set") or p.get("set", "middels")]
+    rs = _regime_short(p.get("regime", "BTC-USD"))
+    return [f"Tell hvor mange av SMA{', SMA'.join(map(str, wins))} prisen er over (T, 0–{len(wins)}), "
+            f"og hvor mange av SMA{', SMA'.join(map(str, rwins))} {rs} er over (B, 0–{len(rwins)}).",
+            f"Målandel = T × B / {len(wins) * len(rwins)}, avrundet til nærmeste 12,5 %: alle over for begge = 100 %, "
+            f"4 og 3 = 75 %, 3 og 3 = 50 %, 2 og 2 = 25 %, null for én av dem = 0 %.",
+            "Lik pris og snitt teller som ikke over."]
+
+
+def _votes_text(row, prefix, ns, count):
+    below = [f"SMA{n}" for n in ns if not (row["close" if prefix == "sma" else "regime_close"] > row[f"{prefix}{n}"])]
+    txt = f"{int(count)} av {len(ns)}"
+    return txt + (f" (under {', '.join(below)})" if below and len(below) < len(ns) else "")
+
+
+def _ens_regime_display(row, p):
+    wins = SMA_SETS[p.get("set", "middels")]
+    rwins = SMA_SETS[p.get("regime_set") or p.get("set", "middels")]
+    rs = _regime_short(p.get("regime", "BTC-USD"))
+    out = [("Egen trend: snitt over", "text", _votes_text(row, "sma", wins, row["own_votes"])),
+           (f"{rs}-trend: snitt over", "text", _votes_text(row, "rsma", rwins, row["regime_votes"])),
+           (f"{rs} sluttkurs", "money", row["regime_close"])]
+    if p.get("check") == "weekly":
+        out.append(("Mål hvis søndag var i dag", "pct", row["raw_target"]))
+    return out
+
+
 FAMILIES = {
+    "ens_regime": dict(fn=ens_regime, rules=_ens_regime_rules, display=_ens_regime_display,
+                       label=lambda p: f"Trend × {_regime_short(p.get('regime', 'BTC-USD'))}-trend",
+                       warmup=lambda p: max(max(SMA_SETS[p.get("set", "middels")]),
+                                            max(SMA_SETS[p.get("regime_set") or p.get("set", "middels")]))),
     "sma_band": dict(fn=sma_band, rules=_sma_band_rules, display=_sma_band_display,
                      label=lambda p: f"SMA{p['n']}" + (f" ±{_fmt_band(p['band'])}" if p.get("band") else "")
                      + (" ukentlig" if p.get("check") == "weekly" else ""),
@@ -334,8 +406,6 @@ def rules(spec: dict) -> list[str]:
 
 def display(row: pd.Series, spec: dict) -> list[tuple]:
     fam, p = split_spec(spec)
-    if fam != "sma_band":
-        p.pop("check", None)
     return FAMILIES[fam]["display"](row, p)
 
 
@@ -353,7 +423,7 @@ def chart_lines(spec: dict) -> list[tuple[str, str]]:
     fam, p = split_spec(spec)
     if fam == "sma_band":
         return [("sma", f"SMA{p['n']}")]
-    if fam in ("ens_sma",):
+    if fam in ("ens_sma", "ens_regime"):
         wins = SMA_SETS[p.get("set", "middels")]
         return [(f"sma{wins[0]}", f"SMA{wins[0]}"), (f"sma{wins[-1]}", f"SMA{wins[-1]}")]
     if fam == "ema_cross":
@@ -385,6 +455,19 @@ def notes(row: pd.Series, spec: dict, near: float = 0.03) -> list[str]:
             s = row.get(f"sma{n}")
             if s == s and s and abs(c / s - 1) <= near:
                 out.append(f"Prisen er {c / s - 1:+.1%} fra SMA{n} – posisjonen kan endres ved neste sjekk.")
+    elif fam == "ens_regime":
+        rs = _regime_short(p.get("regime", "BTC-USD"))
+        rwins = SMA_SETS[p.get("regime_set") or p.get("set", "middels")]
+        for label_, price, prefix, ns in (("Prisen", c, "sma", SMA_SETS[p.get("set", "middels")]),
+                                           (rs, row["regime_close"], "rsma", rwins)):
+            for n in ns:
+                s = row.get(f"{prefix}{n}")
+                if s == s and s and abs(price / s - 1) <= near:
+                    out.append(f"{label_} er {price / s - 1:+.1%} fra sin SMA{n} – målet kan endres ved neste sjekk.")
+        if p.get("check") == "weekly" and abs(row["raw_target"] - row["target"]) > 1e-9:
+            pct_txt = f"{row['raw_target'] * 100:g}".replace(".", ",")
+            out.append(f"Med dagens priser ville målet vært {pct_txt} % – "
+                       "det gjelder først hvis det står slik ved døgnslutt søndag.")
     if p.get("check") == "weekly":
         out.append("Signalet sjekkes bare ved døgnslutt søndag.")
     return out

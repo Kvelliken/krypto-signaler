@@ -24,10 +24,10 @@ Satt under `[[assets]]` i `config.toml`. Alle tall er etter Firi-kostnader (0,7 
 | Coin | Regel | Kort fortalt |
 |---|---|---|
 | BTC | SMA150 ±2 %, daglig | Inn over SMA150 + 2 %, ut under SMA150 − 2 % |
-| ETH | SMA-ensemble 50/100/150/200, 50 % kjerne, ukentlig | 50 % fast + 12,5 % per snitt prisen er over, sjekkes søndag |
+| ETH | Trend × BTC-trend, ukentlig | Antall av SMA50/100/150/200 ETH er over × antall BTC er over / 16, i trinn på 12,5 %, sjekkes søndag |
 | SOL | SMA200 ±2 %, daglig | Inn over SMA200 + 2 %, ut under SMA200 − 2 % |
 
-Reglene ble valgt med `research/search.py` (320 varianter, walk-forward) og `research/classic.py`
+ETH-regelen er utformet i `research/eth_design.py`. BTC- og SOL-reglene ble valgt med `research/search.py` (320 varianter, walk-forward) og `research/classic.py`
 (klassiske regler i alle delperioder, bootstrap). Se nettsiden for forbehold.
 
 ## Oppsett (én gang)
