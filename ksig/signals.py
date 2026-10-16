@@ -24,7 +24,8 @@ HISTORY_DAYS = 400
 
 
 def pct(x: float) -> str:
-    return f"{x:.0%}".replace("%", " %")
+    v = round(x * 100, 1)
+    return (f"{v:.0f}" if v == int(v) else f"{v:.1f}".replace(".", ",")) + " %"
 
 
 def describe_action(prev: float | None, new: float) -> str:

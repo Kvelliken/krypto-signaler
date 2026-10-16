@@ -18,7 +18,10 @@ from email.message import EmailMessage
 
 
 def _pct(x):
-    return "–" if x is None else f"{x:.0%}".replace("%", " %")
+    if x is None:
+        return "–"
+    v = round(x * 100, 1)
+    return (f"{v:.0f}" if v == int(v) else f"{v:.1f}".replace(".", ",")) + " %"
 
 
 def build_message(sig: dict, pages_url: str, reason: str = "change") -> tuple[str, str, str]:

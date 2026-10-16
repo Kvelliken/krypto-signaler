@@ -161,6 +161,7 @@ const R = D.research, S = D.signals;
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const nf = (x, d = 0) => x == null ? '–' : x.toLocaleString('nb-NO', { minimumFractionDigits: d, maximumFractionDigits: d });
 const pct = (x, d = 1, sign = false) => x == null ? '–' : (sign && x > 0 ? '+' : '') + nf(x * 100, d) + ' %';
+const tpct = x => x == null ? '–' : nf(x * 100, Math.abs(x * 100 - Math.round(x * 100)) > 1e-6 ? 1 : 0) + ' %';
 const money = x => x == null ? '–' : (x >= 1000 ? nf(x, 0) : x >= 10 ? nf(x, 2) : nf(x, 4)) + ' $';
 const el = (tag, attrs = {}, html = '') => { const e = document.createElement(tag); Object.assign(e, attrs); if (html) e.innerHTML = html; return e; };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -185,7 +186,7 @@ if (S.max_stale_days >= 2) {
   banner.innerHTML = `<div class="banner warn"><b>Advarsel:</b> dataene er ikke oppdatert (eldste coin er ${S.max_stale_days} døgn bak). Signalene kan være utdaterte.</div>`;
 } else if (changedNow.length) {
   banner.innerHTML = `<div class="banner change"><b>Endring ved siste døgnslutt:</b> ` +
-    changedNow.map(a => `${esc(a.short)} ${pct(a.prev_day_target, 0)} → ${pct(a.target, 0)}`).join(' · ') + `</div>`;
+    changedNow.map(a => `${esc(a.short)} ${tpct(a.prev_day_target)} → ${tpct(a.target)}`).join(' · ') + `</div>`;
 } else {
   banner.innerHTML = `<div class="banner"><b>Ingen endring.</b> Behold posisjonene som de er.</div>`;
 }
@@ -195,13 +196,13 @@ const coins = document.getElementById('coins');
 S.assets.forEach((a, i) => {
   const changed = a.prev_day_target != null && Math.abs(a.prev_day_target - a.target) > 1e-9;
   const action = !changed ? 'Behold'
-    : a.target === 0 ? 'Selg alt' : a.prev_day_target === 0 ? `Kjøp til ${pct(a.target, 0)}`
-    : a.target < a.prev_day_target ? `Selg ned til ${pct(a.target, 0)}` : `Kjøp opp til ${pct(a.target, 0)}`;
+    : a.target === 0 ? 'Selg alt' : a.prev_day_target === 0 ? `Kjøp til ${tpct(a.target)}`
+    : a.target < a.prev_day_target ? `Selg ned til ${tpct(a.target)}` : `Kjøp opp til ${tpct(a.target)}`;
   const card = el('article', { className: 'card coin' + (changed ? ' changed' : '') });
   card.innerHTML = `
     <div class="coin-head"><span class="coin-name">${esc(a.name)} <span class="muted">${esc(a.short)}</span></span>
       <span class="tag ${changed ? 'chg' : ''}">${changed ? 'Endret: ' + action : action}</span></div>
-    <div class="target">${pct(a.target, 0)}</div>
+    <div class="target">${tpct(a.target)}</div>
     <div class="state">${stateLabel(a.target)}${a.last_change ? ' · siden ' + a.last_change : ''}</div>
     <div class="meter" aria-hidden="true"><div style="width:${a.target * 100}%"></div></div>
     <dl class="kv">
@@ -266,7 +267,7 @@ S.assets.forEach((a, i) => {
     .concat(h.lines.map((l, k) => ({ label: l.name, data: l.values, borderColor: css('--muted'), borderWidth: 1.5, borderDash: dash[k % 2] })));
   const o = baseOptions({ yfmt: v => nf(v, v > 0 && v < 10 ? 2 : 0),
     tooltip: { label: c => ` ${c.dataset.label}: ${money(c.parsed.y)}`,
-               afterBody: items => [`Eksponering: ${pct(h.target[items[0].dataIndex], 0)}`] } });
+               afterBody: items => [`Eksponering: ${tpct(h.target[items[0].dataIndex])}`] } });
   o.scales.x.ticks.display = false; o.scales.y.ticks.maxTicksLimit = 4;
   new Chart(document.getElementById('mini-' + i), { type: 'line', data: { labels: h.dates, datasets: sets }, options: o });
   const strip = document.getElementById('strip-' + i);
@@ -276,7 +277,7 @@ S.assets.forEach((a, i) => {
       const span = el('span');
       span.style.width = ((k - start) / h.target.length * 100) + '%';
       span.style.opacity = h.target[start] === 0 ? 0 : 0.25 + 0.75 * h.target[start];
-      span.title = `${h.dates[start]} – ${h.dates[k - 1]}: ${pct(h.target[start], 0)}`;
+      span.title = `${h.dates[start]} – ${h.dates[k - 1]}: ${tpct(h.target[start])}`;
       strip.appendChild(span);
       start = k;
     }
@@ -421,7 +422,7 @@ document.getElementById('pitfalls').innerHTML = pit.map(([t, b]) => `<div class=
 const log = D.log;
 document.getElementById('log').innerHTML = log.length
   ? `<thead><tr><th>Dato</th><th>Coin</th><th>Fra</th><th>Til</th><th>Pris</th><th class="l">Handling</th></tr></thead><tbody>` +
-    log.map(r => `<tr><td>${esc(r.data_date)}</td><td>${esc(r.coin)}</td><td>${r.fra === '' ? '–' : pct(+r.fra, 0)}</td><td>${pct(+r.til, 0)}</td><td>${money(+r.pris)}</td><td class="l">${esc(r.handling)}</td></tr>`).join('') + '</tbody>'
+    log.map(r => `<tr><td>${esc(r.data_date)}</td><td>${esc(r.coin)}</td><td>${r.fra === '' ? '–' : tpct(+r.fra)}</td><td>${tpct(+r.til)}</td><td>${money(+r.pris)}</td><td class="l">${esc(r.handling)}</td></tr>`).join('') + '</tbody>'
   : '<tbody><tr><td class="l">Ingen signaler logget ennå.</td></tr></tbody>';
 
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => location.reload());
