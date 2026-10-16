@@ -1,0 +1,41 @@
+[
+  {
+    "symbol": "BTC-USD",
+    "rows": 4412,
+    "first_date": "2014-09-17",
+    "last_date": "2026-10-15",
+    "sources": [
+      "yahoo"
+    ],
+    "stale_days": 0,
+    "missing_days": 0,
+    "revisions": 0,
+    "warnings": []
+  },
+  {
+    "symbol": "ETH-USD",
+    "rows": 3263,
+    "first_date": "2017-11-09",
+    "last_date": "2026-10-15",
+    "sources": [
+      "yahoo"
+    ],
+    "stale_days": 0,
+    "missing_days": 0,
+    "revisions": 0,
+    "warnings": []
+  },
+  {
+    "symbol": "SOL-USD",
+    "rows": 2380,
+    "first_date": "2020-04-10",
+    "last_date": "2026-10-15",
+    "sources": [
+      "yahoo"
+    ],
+    "stale_days": 0,
+    "missing_days": 0,
+    "revisions": 0,
+    "warnings": []
+  }
+]
