@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Krypto-signaler</title>
+<meta name="robots" content="noindex">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --surface-2: #f0efec;
+  --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --ring: rgba(11,11,11,0.10);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;
+  --good: #006300; --bad: #d03b3b; --warn-bg: #fff4d6; --warn-ink: #6b4a00;
+  --chg-bg: #e8f1fc; --chg-ring: #2a78d6;
+  --seq-lo: #cde2fb; --seq-hi: #1c5cab;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232321;
+    --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+    --good: #0ca30c; --bad: #e66767; --warn-bg: #3a2f12; --warn-ink: #f5d27a;
+    --chg-bg: #13263d; --chg-ring: #3987e5;
+    --seq-lo: #1d2a3a; --seq-hi: #3987e5;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232321;
+  --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+  --good: #0ca30c; --bad: #e66767; --warn-bg: #3a2f12; --warn-ink: #f5d27a;
+  --chg-bg: #13263d; --chg-ring: #3987e5;
+  --seq-lo: #1d2a3a; --seq-hi: #3987e5;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 26px; margin: 0 0 2px; letter-spacing: -0.01em; }
+h2 { font-size: 19px; margin: 40px 0 12px; }
+h3 { font-size: 15px; margin: 22px 0 8px; }
+p { margin: 0 0 10px; }
+.sub { color: var(--ink-2); font-size: 14px; }
+.muted { color: var(--muted); }
+.card { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 16px; }
+.banner { margin-top: 18px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--ring);
+  background: var(--surface); font-size: 16px; }
+.banner.change { background: var(--chg-bg); border-color: var(--chg-ring); }
+.banner.warn { background: var(--warn-bg); color: var(--warn-ink); }
+.banner b { font-weight: 650; }
+.coins { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; margin-top: 14px; }
+.coin.changed { border-color: var(--chg-ring); box-shadow: 0 0 0 1px var(--chg-ring) inset; }
+.coin-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.coin-name { font-weight: 650; font-size: 16px; }
+.target { font-size: 34px; font-weight: 700; line-height: 1.1; margin: 8px 0 2px; }
+.state { color: var(--ink-2); font-size: 14px; }
+.tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  background: var(--surface-2); color: var(--ink-2); }
+.tag.chg { background: var(--chg-ring); color: #fff; }
+.meter { height: 8px; border-radius: 4px; background: var(--surface-2); margin: 10px 0 12px; overflow: hidden; }
+.meter > div { height: 100%; background: var(--s1); border-radius: 4px; }
+dl.kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 0; font-size: 14px; }
+dl.kv dt { color: var(--ink-2); }
+dl.kv dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.notes { margin: 10px 0 0; padding-left: 18px; font-size: 13.5px; color: var(--ink-2); }
+.chart-box { position: relative; height: 170px; margin-top: 12px; }
+.chart-box.tall { height: 340px; }
+.chart-box.mid { height: 200px; }
+.strip { display: flex; height: 10px; border-radius: 3px; overflow: hidden; margin-top: 6px; background: var(--surface-2); }
+.strip > span { display: block; height: 100%; background: var(--s1); }
+.strip-legend { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.rules { margin: 0; padding-left: 20px; }
+.rules li { margin-bottom: 4px; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap;
+  font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--ink-2); font-weight: 600; font-size: 13px; }
+td.l, th.l { text-align: left; white-space: normal; }
+tr.hl td { font-weight: 650; }
+.pos { color: var(--good); } .neg { color: var(--bad); }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 14px; }
+.tabs button { font: inherit; font-size: 14px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--ring);
+  background: var(--surface); color: var(--ink); cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--ink); color: var(--page); border-color: var(--ink); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); margin: 8px 0 0; }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.heat td { color: var(--ink); }
+.pitfalls { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.pitfalls .card h3 { margin-top: 0; }
+.pitfalls .card p { font-size: 14px; color: var(--ink-2); }
+details summary { cursor: pointer; color: var(--ink-2); font-size: 14px; margin-top: 8px; }
+footer { margin-top: 48px; font-size: 13px; color: var(--muted); }
+a { color: var(--s1); }
+@media (max-width: 520px) { .target { font-size: 30px; } h1 { font-size: 22px; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Krypto-signaler</h1>
+    <p class="sub" id="subtitle"></p>
+  </header>
+
+  <div id="banner"></div>
+  <section class="coins" id="coins"></section>
+
+  <h2>Gjeldende regler</h2>
+  <div class="card">
+    <ol class="rules" id="rules"></ol>
+    <p class="sub" style="margin-top:10px">Målprosenten gjelder den delen av porteføljen du har satt av til hver coin.
+      Signalene beregnes ved døgnslutt 00:00 UTC, og denne siden oppdateres automatisk hver natt.</p>
+  </div>
+
+  <h2>Backtest: hele porteføljen</h2>
+  <p class="sub" id="pf-sub"></p>
+  <div class="card">
+    <div class="chart-box tall"><canvas id="pf-equity"></canvas></div>
+    <div class="legend" id="pf-legend"></div>
+    <div class="chart-box mid"><canvas id="pf-dd"></canvas></div>
+  </div>
+  <div class="card table-wrap" style="margin-top:14px"><table id="pf-table"></table></div>
+
+  <h2>Backtest per coin</h2>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div id="asset-panel"></div>
+
+  <h2>Fallgruver og forutsetninger</h2>
+  <div class="pitfalls" id="pitfalls"></div>
+
+  <h2>Signallogg</h2>
+  <div class="card table-wrap"><table id="log"></table></div>
+
+  <footer>
+    Regelbaserte signaler, ikke finansiell rådgivning. Historisk avkastning er ingen garanti for fremtidig avkastning.
+    <br><span id="foot-gen"></span> · <a href="https://github.com/Kvelliken/krypto-signaler">Kildekode</a>
+    · <a href="research.json">Rådata (backtest)</a> · <a href="signals.json">Rådata (signaler)</a>
+  </footer>
+</main>
+
+<script id="payload" type="application/json">__DATA_JSON__</script>
+<script>
+const D = JSON.parse(document.getElementById('payload').textContent);
+const R = D.research, S = D.signals;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const nf = (x, d = 0) => x == null ? '–' : x.toLocaleString('nb-NO', { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = (x, d = 1, sign = false) => x == null ? '–' : (sign && x > 0 ? '+' : '') + nf(x * 100, d) + ' %';
+const money = x => x == null ? '–' : (x >= 1000 ? nf(x, 0) : x >= 10 ? nf(x, 2) : nf(x, 4)) + ' $';
+const el = (tag, attrs = {}, html = '') => { const e = document.createElement(tag); Object.assign(e, attrs); if (html) e.innerHTML = html; return e; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const SERIES = [
+  { key: 'strategy', name: 'Strategi', color: '--s1', width: 2 },
+  { key: 'sma_only', name: 'Bare SMA-filter', color: '--s3', width: 1.5 },
+  { key: 'buy_hold', name: 'Kjøp og hold', color: '--s2', width: 1.5 },
+];
+const charts = [];
+
+function stateLabel(t) { return t >= 1 ? 'Fullt investert' : t > 0 ? 'Delvis investert (gevinstsikret)' : 'Ute av markedet'; }
+
+// ---------- Topp ----------
+const dataDate = S.assets.map(a => a.date).sort().pop();
+document.getElementById('subtitle').textContent =
+  `Signaler for døgnslutt ${dataDate} (00:00 UTC) · siden bygget ${S.generated}`;
+document.getElementById('foot-gen').textContent = `Backtest beregnet ${R.generated}`;
+
+const changedNow = S.assets.filter(a => a.prev_day_target != null && a.prev_day_target !== a.target);
+const banner = document.getElementById('banner');
+if (S.max_stale_days >= 2) {
+  banner.innerHTML = `<div class="banner warn"><b>Advarsel:</b> dataene er ikke oppdatert (eldste coin er ${S.max_stale_days} døgn bak). Signalene kan være utdaterte.</div>`;
+} else if (changedNow.length) {
+  banner.innerHTML = `<div class="banner change"><b>Endring ved siste døgnslutt:</b> ` +
+    changedNow.map(a => `${esc(a.short)} ${pct(a.prev_day_target, 0)} → ${pct(a.target, 0)}`).join(' · ') + `</div>`;
+} else {
+  banner.innerHTML = `<div class="banner"><b>Ingen endring.</b> Behold posisjonene som de er.</div>`;
+}
+
+// ---------- Coin-kort ----------
+const coins = document.getElementById('coins');
+S.assets.forEach((a, i) => {
+  const changed = a.prev_day_target != null && a.prev_day_target !== a.target;
+  const card = el('article', { className: 'card coin' + (changed ? ' changed' : '') });
+  const action = changed
+    ? (a.target === 0 ? 'Selg alt' : a.prev_day_target === 0 ? `Kjøp til ${pct(a.target, 0)}` : a.target < a.prev_day_target ? `Selg ned til ${pct(a.target, 0)}` : `Kjøp tilbake til ${pct(a.target, 0)}`)
+    : 'Behold';
+  card.innerHTML = `
+    <div class="coin-head"><span class="coin-name">${esc(a.name)} <span class="muted">${esc(a.short)}</span></span>
+      <span class="tag ${changed ? 'chg' : ''}">${changed ? 'Endret: ' + action : action}</span></div>
+    <div class="target">${pct(a.target, 0)}</div>
+    <div class="state">${stateLabel(a.target)}${a.last_change ? ' · siden ' + a.last_change : ''}</div>
+    <div class="meter" aria-hidden="true"><div style="width:${a.target * 100}%"></div></div>
+    <dl class="kv">
+      <dt>Sluttkurs</dt><dd>${money(a.close)}</dd>
+      <dt>SMA${S.params.sma}</dt><dd>${money(a.sma)}</dd>
+      <dt>Avstand til SMA</dt><dd class="${a.dist_sma >= 0 ? 'pos' : 'neg'}">${pct(a.dist_sma, 1, true)}</dd>
+      <dt>RSI (${S.params.rsi_period})</dt><dd>${nf(a.rsi, 0)}</dd>
+    </dl>
+    ${a.notes.length ? '<ul class="notes">' + a.notes.map(n => `<li>${esc(n)}</li>`).join('') + '</ul>' : ''}
+    <div class="chart-box"><canvas id="mini-${i}" aria-label="Pris og SMA siste ${a.history.dates.length} dager"></canvas></div>
+    <div class="strip" id="strip-${i}" title="Eksponering siste ${a.history.dates.length} dager"></div>
+    <div class="strip-legend"><span>${a.history.dates[0]}</span><span>Eksponering (mørkere = mer)</span><span>${a.history.dates.at(-1)}</span></div>`;
+  coins.appendChild(card);
+});
+
+// ---------- Regler ----------
+const P = S.params;
+const rules = [
+  `Prisen under ${P.sma}-dagers glidende snitt (SMA${P.sma}) ved døgnslutt → <b>0 %</b> (selg alt).`,
+  `Prisen over SMA${P.sma} → <b>100 %</b>.`,
+];
+if (P.rsi_exit < 100) {
+  rules.push(`RSI(${P.rsi_period}) over ${P.rsi_exit} mens du er fullt investert → selg ned til <b>${pct(P.trim_to, 0)}</b> (gevinstsikring).`);
+  rules.push(`Etter gevinstsikring: kjøp tilbake til 100 % når RSI har falt til ${P.rsi_reentry} eller lavere. Bryter prisen SMA først, gjelder regel 1.`);
+}
+document.getElementById('rules').innerHTML = rules.map(r => `<li>${r}</li>`).join('');
+
+// ---------- Hjelpere for diagrammer ----------
+function baseOptions(opts = {}) {
+  const grid = css('--grid'), muted = css('--muted');
+  return {
+    responsive: true, maintainAspectRatio: false, animation: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { display: false },
+      tooltip: { backgroundColor: css('--surface'), titleColor: css('--ink'), bodyColor: css('--ink-2'),
+        borderColor: css('--axis'), borderWidth: 1, padding: 10, boxPadding: 4, usePointStyle: true,
+        callbacks: opts.tooltip || {} } },
+    elements: { point: { radius: 0, hoverRadius: 4, hitRadius: 8 }, line: { tension: 0 } },
+    scales: {
+      x: { ticks: { color: muted, maxTicksLimit: 7, maxRotation: 0, autoSkip: true }, grid: { display: false },
+           border: { color: css('--axis') } },
+      y: { type: opts.log ? 'logarithmic' : 'linear', position: 'right',
+           ticks: { color: muted, maxTicksLimit: 6, callback: opts.yfmt || (v => nf(v, 0)) },
+           grid: { color: grid }, border: { display: false }, min: opts.min, max: opts.max },
+    },
+  };
+}
+function legend(target, items) {
+  document.getElementById(target).innerHTML = items.map(s => `<span><i style="background:${css(s.color)}"></i>${s.name}</span>`).join('');
+}
+function equityChart(canvasId, eq) {
+  return new Chart(document.getElementById(canvasId), {
+    type: 'line',
+    data: { labels: eq.dates, datasets: SERIES.filter(s => eq[s.key]).map(s => ({
+      label: s.name, data: eq[s.key], borderColor: css(s.color), backgroundColor: css(s.color),
+      borderWidth: s.width })) },
+    options: baseOptions({ log: true, yfmt: v => {
+        const l = Math.log10(v); return Math.abs(l - Math.round(l)) < 1e-9 || [20, 50, 200, 500, 2000, 5000].includes(v) ? nf(v, 0) : ''; },
+      tooltip: { label: c => ` ${c.dataset.label}: ${nf(c.parsed.y, 0)} (start 100)` } }),
+  });
+}
+function ddChart(canvasId, eq, dd) {
+  return new Chart(document.getElementById(canvasId), {
+    type: 'line',
+    data: { labels: eq.dates, datasets: SERIES.filter(s => dd[s.key]).map(s => ({
+      label: s.name, data: dd[s.key], borderColor: css(s.color), borderWidth: s.width === 2 ? 1.5 : 1 })) },
+    options: baseOptions({ max: 0, yfmt: v => nf(v, 0) + ' %',
+      tooltip: { label: c => ` ${c.dataset.label}: ${nf(c.parsed.y, 1)} % fra topp` } }),
+  });
+}
+
+// ---------- Mini-diagram per coin ----------
+S.assets.forEach((a, i) => {
+  const h = a.history;
+  charts.push(new Chart(document.getElementById('mini-' + i), {
+    type: 'line',
+    data: { labels: h.dates, datasets: [
+      { label: 'Pris', data: h.close, borderColor: css('--s1'), borderWidth: 1.5 },
+      { label: 'SMA' + S.params.sma, data: h.sma, borderColor: css('--muted'), borderWidth: 1.5, borderDash: [4, 3] },
+    ] },
+    options: (() => { const o = baseOptions({ yfmt: v => nf(v, v > 0 && v < 10 ? 2 : 0),
+      tooltip: { label: c => ` ${c.dataset.label}: ${money(c.parsed.y)}`,
+                 afterBody: items => { const k = items[0].dataIndex; return [`Eksponering: ${pct(h.target[k], 0)}`, `RSI: ${nf(h.rsi[k], 0)}`]; } } });
+      o.scales.x.ticks.display = false; o.scales.y.ticks.maxTicksLimit = 4; return o; })(),
+  }));
+  // Eksponeringsstripe: sammenhengende segmenter
+  const strip = document.getElementById('strip-' + i);
+  let start = 0;
+  for (let k = 1; k <= h.target.length; k++) {
+    if (k === h.target.length || h.target[k] !== h.target[start]) {
+      const span = el('span');
+      span.style.width = ((k - start) / h.target.length * 100) + '%';
+      span.style.opacity = h.target[start] === 0 ? 0 : h.target[start] < 1 ? 0.45 : 1;
+      span.title = `${h.dates[start]} – ${h.dates[k - 1]}: ${pct(h.target[start], 0)}`;
+      strip.appendChild(span);
+      start = k;
+    }
+  }
+});
+
+// ---------- Portefølje ----------
+const PF = R.portfolio;
+document.getElementById('pf-sub').textContent =
+  `Lik vekt i ${R.assets.map(a => a.short).join(', ')} fra ${PF.start} (første dag alle har nok historikk). ` +
+  `Etter kurtasje ${pct(R.costs.fee, 2)} + slippage ${pct(R.costs.slippage, 2)} per handel, utførelse ${R.costs.lag_days} døgn etter signal. Logaritmisk skala, start 100.`;
+charts.push(equityChart('pf-equity', PF.equity));
+charts.push(ddChart('pf-dd', PF.equity, PF.drawdown));
+legend('pf-legend', SERIES);
+
+function metricsTable(id, rows) {
+  const cols = [
+    ['Avkastning/år', m => pct(m.cagr)], ['Sharpe', m => nf(m.sharpe, 2)], ['Sortino', m => nf(m.sortino, 2)],
+    ['Maks fall', m => pct(m.max_dd)], ['Calmar', m => nf(m.calmar, 2)], ['Volatilitet', m => pct(m.vol, 0)],
+    ['Tid i marked', m => pct(m.time_in_market, 0)], ['Handler/år', m => nf(m.trades_per_year, 1)],
+    ['Kostnader totalt', m => pct(m.cost_drag)], ['100 $ ble', m => nf(m.final_multiple * 100, 0) + ' $'],
+  ];
+  document.getElementById(id).innerHTML =
+    `<thead><tr><th></th>${cols.map(c => `<th>${c[0]}</th>`).join('')}</tr></thead><tbody>` +
+    rows.map(([name, m, hl]) => `<tr class="${hl ? 'hl' : ''}"><td>${name}</td>${cols.map(c => `<td>${c[1](m)}</td>`).join('')}</tr>`).join('') +
+    `</tbody>`;
+}
+metricsTable('pf-table', SERIES.map(s => [s.name, PF.metrics[s.key], s.key === 'strategy']));
+
+// ---------- Per coin ----------
+const tabs = document.getElementById('tabs'), panel = document.getElementById('asset-panel');
+let assetCharts = [];
+function heatColor(v, lo, hi) {
+  if (v == null) return 'transparent';
+  const t = hi > lo ? (v - lo) / (hi - lo) : 0.5;
+  return `color-mix(in oklab, ${css('--seq-hi')} ${Math.round(t * 85)}%, ${css('--seq-lo')})`;
+}
+function renderAsset(idx) {
+  assetCharts.forEach(c => c.destroy()); assetCharts = [];
+  [...tabs.children].forEach((b, k) => b.setAttribute('aria-selected', k === idx));
+  const A = R.assets[idx], WF = A.walkforward, P = R.strategy;
+  const lagRows = A.lag_sensitivity.map(r => `<tr><td>${r.lag_days} døgn${r.lag_days === R.costs.lag_days ? ' (antatt)' : ''}</td><td>${pct(r.cagr)}</td><td>${nf(r.sharpe, 2)}</td><td>${pct(r.max_dd)}</td></tr>`).join('');
+  const costRows = A.cost_sensitivity.map(r => `<tr><td>${pct(r.cost, 2)}</td><td>${pct(r.cagr)}</td><td>${nf(r.sharpe, 2)}</td><td>${nf(r.final_multiple * 100, 0)} $</td></tr>`).join('');
+  const g = A.grid, flat = g.sharpe.flat().filter(v => v != null), lo = Math.min(...flat), hi = Math.max(...flat);
+  const heat = `<thead><tr><th>SMA \\ RSI-terskel</th>${g.rsi_exit.map(e => `<th>${e >= 100 ? 'Av' : e}</th>`).join('')}</tr></thead><tbody>` +
+    g.sma.map((s, r) => `<tr><td>SMA${s}</td>${g.rsi_exit.map((e, c) => {
+      const v = g.sharpe[r][c], cur = s === P.sma && e === P.rsi_exit;
+      return `<td style="background:${heatColor(v, lo, hi)};${cur ? 'outline:2px solid var(--ink);outline-offset:-2px;font-weight:700' : ''}" title="Avkastning/år ${pct(g.cagr[r][c])}, maks fall ${pct(g.max_dd[r][c])}">${nf(v, 2)}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
+  const yearly = A.yearly.map(y => `<tr><td>${y.year}${y.partial ? '*' : ''}</td><td class="${y.strategy >= 0 ? 'pos' : 'neg'}">${pct(y.strategy, 0)}</td><td class="${y.buy_hold >= 0 ? 'pos' : 'neg'}">${pct(y.buy_hold, 0)}</td><td>${(y.strategy > y.buy_hold ? '+' : '') + nf((y.strategy - y.buy_hold) * 100, 0)} pp</td></tr>`).join('');
+  let wfHtml = '<p class="sub">For lite historikk til walk-forward-test.</p>';
+  if (WF) {
+    const segs = WF.segments.map(s => `<tr><td>${s.start} – ${s.end}</td><td class="l">${esc(s.label)}</td><td>${nf(s.train_sharpe, 2)}</td></tr>`).join('');
+    wfHtml = `<p class="sub">Testperiode ${WF.oos_start} – ${A.data_end}. Hvert halvår velges den av ${WF.n_candidates} parameterkombinasjoner som hadde best Sharpe
+      på all data <i>før</i> perioden. Kombinasjonen som ser best ut på hele historikken (${esc(WF.insample_best.label)}) hadde Sharpe ${nf(WF.insample_best.full_period_sharpe, 2)} totalt,
+      men det tallet bruker fremtidsdata og er derfor for optimistisk.</p>
+      <div class="table-wrap"><table id="wf-table"></table></div>
+      <div class="chart-box mid" style="height:240px"><canvas id="wf-equity"></canvas></div>
+      <details><summary>Valgte parametere per periode</summary><div class="table-wrap"><table>
+      <thead><tr><th>Periode</th><th class="l">Valgt</th><th>Sharpe i trening</th></tr></thead><tbody>${segs}</tbody></table></div></details>`;
+  }
+  panel.innerHTML = `
+    <div class="card">
+      <p class="sub">Data fra ${A.data_start}. Evaluering fra ${A.eval_start} (etter oppvarming for lengste SMA i testene) til ${A.data_end}.</p>
+      <div class="chart-box tall"><canvas id="a-equity"></canvas></div>
+      <div class="legend" id="a-legend"></div>
+      <div class="chart-box mid"><canvas id="a-dd"></canvas></div>
+    </div>
+    <div class="card table-wrap" style="margin-top:14px"><table id="a-table"></table></div>
+    <h3>Walk-forward (out-of-sample)</h3>
+    <div class="card">${wfHtml}</div>
+    <div class="grid2" style="margin-top:14px">
+      <div class="card"><h3 style="margin-top:0">Kostnadsfølsomhet</h3>
+        <p class="sub">Total kostnad per handel. Kjøp og hold ga ${pct(A.buy_hold_reference.cagr)}/år.</p>
+        <div class="table-wrap"><table><thead><tr><th>Kostnad per handel</th><th>Avk./år</th><th>Sharpe</th><th>100 $ ble</th></tr></thead><tbody>${costRows}</tbody></table></div></div>
+      <div class="card"><h3 style="margin-top:0">Forsinket utførelse</h3>
+        <p class="sub">Hva skjer om du handler et eller to døgn etter signalet?</p>
+        <div class="table-wrap"><table><thead><tr><th>Handler etter</th><th>Avk./år</th><th>Sharpe</th><th>Maks fall</th></tr></thead><tbody>${lagRows}</tbody></table></div></div>
+    </div>
+    <div class="grid2" style="margin-top:14px">
+      <div class="card"><h3 style="margin-top:0">Parameterkart (Sharpe)</h3>
+        <p class="sub">Robust strategi = gode tall også i nabocellene, ikke bare i én. Rammen er gjeldende valg. Hold over for avkastning og maks fall.</p>
+        <div class="table-wrap"><table class="heat">${heat}</table></div></div>
+      <div class="card"><h3 style="margin-top:0">År for år</h3>
+        <div class="table-wrap"><table><thead><tr><th>År</th><th>Strategi</th><th>Kjøp og hold</th><th>Forskjell (pp)</th></tr></thead><tbody>${yearly}</tbody></table></div>
+        <p class="sub" style="margin-top:6px">* Delvis år.</p></div>
+    </div>`;
+  assetCharts.push(equityChart('a-equity', A.equity));
+  assetCharts.push(ddChart('a-dd', A.equity, A.drawdown));
+  legend('a-legend', SERIES);
+  metricsTable('a-table', SERIES.map(s => [s.name, A.metrics[s.key], s.key === 'strategy']));
+  if (WF) {
+    const wfRows = [['Walk-forward', WF.metrics.walk_forward, true], ['Gjeldende strategi', WF.metrics.baseline],
+      ['Bare SMA-filter', WF.metrics.sma_only], ['Kjøp og hold', WF.metrics.buy_hold]];
+    metricsTable('wf-table', wfRows);
+    const eq = WF.equity;
+    assetCharts.push(new Chart(document.getElementById('wf-equity'), {
+      type: 'line',
+      data: { labels: eq.dates, datasets: [
+        { label: 'Walk-forward', data: eq.walk_forward, borderColor: css('--s1'), borderWidth: 2 },
+        { label: 'Gjeldende strategi', data: eq.baseline, borderColor: css('--muted'), borderWidth: 1.5, borderDash: [4, 3] },
+        { label: 'Kjøp og hold', data: eq.buy_hold, borderColor: css('--s2'), borderWidth: 1.5 },
+      ] },
+      options: baseOptions({ log: true, yfmt: v => nf(v, 0), tooltip: { label: c => ` ${c.dataset.label}: ${nf(c.parsed.y, 0)}` } }),
+    }));
+  }
+}
+R.assets.forEach((a, i) => {
+  const b = el('button', { type: 'button', role: 'tab', textContent: a.name, onclick: () => renderAsset(i) });
+  tabs.appendChild(b);
+});
+renderAsset(0);
+
+// ---------- Fallgruver ----------
+const pit = [
+  ['Kurtasje og slippage', `Hver handel koster ${pct(R.costs.fee, 2)} kurtasje + ${pct(R.costs.slippage, 2)} slippage i backtesten. Mange norske plattformer tar mer (ofte 0,5–1 % inkl. spread). Se kostnadstabellen per coin.`],
+  ['Forsinket utførelse', `Backtesten antar at du handler ${R.costs.lag_days === 1 ? 'kort tid etter døgnslutt, til omtrent sluttkursen' : R.costs.lag_days + ' døgn etter signalet'}. Handler du senere, blir resultatet et annet – se tabellen for forsinkelse.`],
+  ['Overtilpasning', 'Parametere som ser best ut på historikken, er nesten alltid for optimistiske. Walk-forward-testen viser hva man ville fått ved å velge parametere uten å kjenne fremtiden.'],
+  ['Utvalgsskjevhet', 'BTC, ETH og SOL er valgt fordi de overlevde og vokste. Mange andre coins gikk mot null. Resultatene sier derfor lite om nye eller mindre coins.'],
+  ['Kort historikk', 'SOL har data fra 2020 og ETH fra slutten av 2017 hos Yahoo. Få fulle markedssykluser gir stor usikkerhet i tallene.'],
+  ['Skatt', 'I Norge skattlegges gevinst ved hvert salg (22 %), også ved bytte mellom coins. En strategi som selger ofte, realiserer gevinster tidligere enn kjøp og hold. Skatt er ikke trukket fra i backtesten.'],
+  ['Datakvalitet', 'Prisene er døgnpriser fra Yahoo Finance (USD), med Coinbase som reserve. Prisen hos din børs kan avvike, særlig i urolige markeder. Bare lukkede døgn brukes.'],
+  ['Kontanter', 'Ute av markedet antas 0 % avkastning. Penger i bank eller rentebærende stablecoins ville gitt noe, men med egne risikoer.'],
+  ['Ekstremhendelser', 'Børser kan stanse uttak eller handel, og priser kan gappe forbi signalnivåer. Backtesten kan ikke fange slike hendelser.'],
+];
+document.getElementById('pitfalls').innerHTML = pit.map(([t, b]) => `<div class="card"><h3>${t}</h3><p>${b}</p></div>`).join('');
+
+// ---------- Logg ----------
+const log = D.log;
+document.getElementById('log').innerHTML = log.length
+  ? `<thead><tr><th>Dato</th><th>Coin</th><th>Fra</th><th>Til</th><th>Pris</th><th class="l">Handling</th></tr></thead><tbody>` +
+    log.map(r => `<tr><td>${esc(r.data_date)}</td><td>${esc(r.coin)}</td><td>${r.fra === '' ? '–' : pct(+r.fra, 0)}</td><td>${pct(+r.til, 0)}</td><td>${money(+r.pris)}</td><td class="l">${esc(r.handling)}</td></tr>`).join('') + '</tbody>'
+  : '<tbody><tr><td class="l">Ingen signaler logget ennå.</td></tr></tbody>';
+
+// Oppdater fargene hvis brukeren bytter mellom lys og mørk modus
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => location.reload());
+</script>
+</body>
+</html>

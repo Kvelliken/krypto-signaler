@@ -1,0 +1,109 @@
+name: Daglige signaler
+
+on:
+  schedule:
+    # 00:35 UTC = 02:35 norsk sommertid / 01:35 vintertid.
+    # GitHub kan forsinke planlagte kjøringer noe ved høy last.
+    - cron: "35 0 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Hva skal kjøres"
+        type: choice
+        options: [daily, build, test-email, full-refresh]
+        default: daily
+  push:
+    branches: [main]
+    paths:
+      - "ksig/**"
+      - "config.toml"
+      - "requirements.txt"
+      - ".github/workflows/**"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  issues: write
+
+concurrency:
+  group: krypto-signaler
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Installer avhengigheter
+        run: pip install -r requirements.txt
+
+      - name: Kjør
+        id: main
+        env:
+          MODE: ${{ github.event_name == 'schedule' && 'daily' || (github.event_name == 'push' && 'build') || inputs.mode }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+        run: |
+          set -e
+          echo "Modus: $MODE"
+          have_data() { ls data/*.csv >/dev/null 2>&1; }
+          case "$MODE" in
+            daily)
+              python -m ksig daily ;;
+            build)
+              have_data || python -m ksig update-data
+              python -m ksig build ;;
+            test-email)
+              have_data || python -m ksig update-data
+              python -m ksig build
+              python -m ksig test-email ;;
+            full-refresh)
+              python -m ksig update-data --full
+              python -m ksig build ;;
+          esac
+
+      - name: Lagre data, tilstand og resultater
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data state results
+          if ! git diff --cached --quiet; then
+            git commit -m "Data og signaler $(date -u +%F)"
+            git pull --rebase
+            git push
+          fi
+
+      - name: Opprett varsel som issue
+        if: steps.main.outputs.alert == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: ${{ steps.main.outputs.alert_title }}
+        run: gh issue create --title "$TITLE" --body-file state/last_alert.md
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: run
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,66 @@
+# =============================================================================
+# Krypto-signaler – konfigurasjon
+# Endringer her slår inn ved neste kjøring på GitHub.
+# =============================================================================
+
+pages_url = "https://kvelliken.github.io/krypto-signaler/"
+data_start = "2014-01-01"   # Henter så langt tilbake som kilden har data
+
+[[assets]]
+symbol = "BTC-USD"
+short = "BTC"
+name = "Bitcoin"
+
+[[assets]]
+symbol = "ETH-USD"
+short = "ETH"
+name = "Ethereum"
+
+[[assets]]
+symbol = "SOL-USD"
+short = "SOL"
+name = "Solana"
+
+# -----------------------------------------------------------------------------
+# Gjeldende strategi – brukes til de daglige signalene
+# -----------------------------------------------------------------------------
+[strategy]
+sma = 200            # Trendfilter: ute av markedet når prisen er under snittet
+rsi_period = 14
+rsi_exit = 85        # RSI over dette -> selg ned til trim_to (100 eller mer = av)
+rsi_reentry = 70     # Kjøp tilbake når RSI faller til dette eller lavere
+trim_to = 0.5        # Andel som beholdes etter gevinstsikring
+
+# -----------------------------------------------------------------------------
+# Kostnader og utførelse i backtesten
+# -----------------------------------------------------------------------------
+[costs]
+fee = 0.001          # Kurtasje per handel (0,10 %). Juster til din børs.
+slippage = 0.0005    # Spread og glidning per handel (0,05 %)
+lag_days = 1         # 1 = handler rett etter døgnslutt (00:00 UTC)
+                     # 2 = handler et døgn for sent
+
+# -----------------------------------------------------------------------------
+# Walk-forward: parametere velges bare med data fra før testperioden
+# -----------------------------------------------------------------------------
+[walkforward]
+min_train_days = 730     # Minst 2 år treningsdata før første testperiode
+test_days = 182          # Velg parametere på nytt hvert halvår
+sma = [100, 150, 200, 250]
+rsi_exit = [75, 80, 85, 90, 100]   # 100 = ingen gevinstsikring
+rsi_reentry = [60, 70]
+
+# -----------------------------------------------------------------------------
+# Robusthetstester
+# -----------------------------------------------------------------------------
+[robustness]
+cost_levels = [0.0, 0.0015, 0.004, 0.008, 0.015]   # Total kostnad per handel
+lag_days = [1, 2, 3]
+
+# -----------------------------------------------------------------------------
+# Varsler
+# -----------------------------------------------------------------------------
+[alerts]
+near_sma_pct = 0.03      # Merk "nær signal" når prisen er innenfor 3 % av SMA
+near_rsi = 80            # Merk "nær signal" når RSI er over dette
+stale_after_days = 2     # Varsle hvis siste data er eldre enn dette
