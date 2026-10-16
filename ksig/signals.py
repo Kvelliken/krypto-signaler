@@ -1,23 +1,26 @@
 """Dagens signaler og endringsdeteksjon.
 
-Signalet beregnes fra siste LUKKEDE døgn. Endringer måles mot den siste
-tilstanden som ble varslet (state/positions.json), ikke bare mot gårsdagen.
-Slik blir en endring varslet selv om en daglig kjøring skulle falle ut.
+Signalet beregnes fra siste LUKKEDE døgn med strategien som er satt for hver coin
+i config.toml. Endringer måles mot den siste tilstanden som ble varslet
+(state/positions.json), ikke bare mot gårsdagen. Slik blir en endring varslet
+selv om en daglig kjøring skulle falle ut.
 """
 from __future__ import annotations
 
 import csv
 import json
+import math
 from datetime import datetime, timezone
 
 import pandas as pd
 
+from . import strategies as S
 from .config import STATE_DIR
 from .data import load_prices, utc_today
-from .strategy import Params, compute
 
 STATE_FILE = STATE_DIR / "positions.json"
 LOG_FILE = STATE_DIR / "signal_log.csv"
+HISTORY_DAYS = 400
 
 
 def pct(x: float) -> str:
@@ -27,15 +30,15 @@ def pct(x: float) -> str:
 def describe_action(prev: float | None, new: float) -> str:
     if prev is None:
         return f"Startposisjon: {pct(new)}"
-    if new == prev:
+    if abs(new - prev) < 1e-9:
         return "Ingen endring"
     if new == 0:
-        return f"SELG ALT ({pct(prev)} → 0 %): prisen har falt under SMA"
+        return f"SELG ALT ({pct(prev)} → 0 %)"
     if prev == 0:
-        return f"KJØP til {pct(new)}: prisen har krysset over SMA"
+        return f"KJØP til {pct(new)}"
     if new < prev:
-        return f"SELG ned til {pct(new)} (gevinstsikring, RSI høy)"
-    return f"KJØP tilbake til {pct(new)} (RSI har kjølnet)"
+        return f"SELG ned til {pct(new)} (fra {pct(prev)})"
+    return f"KJØP opp til {pct(new)} (fra {pct(prev)})"
 
 
 def load_state() -> dict | None:
@@ -44,64 +47,69 @@ def load_state() -> dict | None:
     return None
 
 
+def _num(v):
+    if v is None:
+        return None
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return v
+    return None if math.isnan(f) else f
+
+
 def compute_signals(cfg: dict) -> dict:
-    p = Params.from_cfg(cfg["strategy"])
     alerts = cfg.get("alerts", {})
     state = load_state()
     notified = (state or {}).get("targets", {})
-    params_changed = bool(state) and state.get("params") != p.to_dict()
+    old_specs = (state or {}).get("strategies", {})
     yesterday = utc_today() - pd.Timedelta(days=1)
     rows = []
     for asset in cfg["assets"]:
+        spec = asset["strategy"]
         df = load_prices(asset["symbol"])
-        sig = compute(df["Close"], p)
+        sig = S.run(df["Close"], spec)
         last = sig.iloc[-1]
         tgt = sig["target"]
-        changes = tgt[tgt.diff().fillna(0) != 0]
-        last_change = str(changes.index[-1].date()) if len(changes) else None
+        changes = tgt[tgt.diff().fillna(0).abs() > 1e-9]
         prev_notified = notified.get(asset["short"])
         target = float(last["target"])
-        dist = float(last["close"] / last["sma"] - 1) if pd.notna(last["sma"]) else None
-        notes = []
-        if dist is not None and abs(dist) <= alerts.get("near_sma_pct", 0.03):
-            notes.append(f"Prisen er {dist:+.1%} fra SMA{p.sma} – et brudd kan gi signal snart.")
-        if p.uses_rsi and pd.notna(last["rsi"]) and target == 1.0 and last["rsi"] >= alerts.get("near_rsi", 80):
-            notes.append(f"RSI er {last['rsi']:.0f}, nær gevinstsikring ved {p.rsi_exit:g}.")
-        if bool(last["trimmed"]):
-            notes.append(f"Gevinstsikring aktiv: kjøper tilbake når RSI ≤ {p.rsi_reentry:g}.")
         stale = int((yesterday - sig.index[-1]).days)
+        notes = S.notes(last, spec, alerts.get("near_pct", 0.03))
         if stale >= alerts.get("stale_after_days", 2):
             notes.append(f"OBS: siste data er fra {sig.index[-1].date()} ({stale} døgn gammelt).")
+        strategy_changed = bool(state) and old_specs.get(asset["short"]) not in (None, spec)
+        if strategy_changed:
+            notes.insert(0, f"Ny strategi for {asset['short']}: {S.label(spec)}.")
+        lines = S.chart_lines(spec)
+        h = sig.iloc[-HISTORY_DAYS:]
         rows.append({
             "symbol": asset["symbol"], "short": asset["short"], "name": asset["name"],
+            "spec": spec, "label": S.label(spec), "rules": S.rules(spec),
             "date": str(sig.index[-1].date()),
             "close": float(last["close"]),
-            "sma": float(last["sma"]) if pd.notna(last["sma"]) else None,
-            "dist_sma": dist,
-            "rsi": float(last["rsi"]) if pd.notna(last["rsi"]) else None,
+            "display": [{"name": n, "kind": k, "value": (bool(v) if k == "check" else _num(v))}
+                        for n, k, v in S.display(last, spec)],
             "target": target,
             "prev_day_target": float(tgt.iloc[-2]) if len(tgt) > 1 else None,
             "notified_target": prev_notified,
-            "changed": prev_notified is None or prev_notified != target,
+            "changed": prev_notified is None or abs(prev_notified - target) > 1e-9,
+            "strategy_changed": strategy_changed,
             "action": describe_action(prev_notified, target),
-            "trimmed": bool(last["trimmed"]),
-            "last_change": last_change,
+            "last_change": str(changes.index[-1].date()) if len(changes) else None,
             "stale_days": stale,
             "notes": notes,
             "history": {
-                "dates": [str(d.date()) for d in sig.index[-400:]],
-                "close": [round(float(v), 6) for v in sig["close"].iloc[-400:]],
-                "sma": [None if pd.isna(v) else round(float(v), 6) for v in sig["sma"].iloc[-400:]],
-                "rsi": [None if pd.isna(v) else round(float(v), 2) for v in sig["rsi"].iloc[-400:]],
-                "target": [float(v) for v in sig["target"].iloc[-400:]],
+                "dates": [str(d.date()) for d in h.index],
+                "close": [round(float(v), 6) for v in h["close"]],
+                "lines": [{"name": nm, "values": [None if pd.isna(v) else round(float(v), 6) for v in h[col]]}
+                          for col, nm in lines],
+                "target": [float(v) for v in h["target"]],
             },
         })
     return {
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        "params": p.to_dict(),
-        "params_label": p.label(),
-        "params_changed": params_changed,
         "first_run": state is None,
+        "params_changed": any(r["strategy_changed"] for r in rows),
         "assets": rows,
         "any_change": any(r["changed"] for r in rows),
         "max_stale_days": max(r["stale_days"] for r in rows),
@@ -113,7 +121,7 @@ def save_state(sig: dict) -> None:
     STATE_FILE.write_text(json.dumps({
         "updated": sig["generated"],
         "data_date": max(r["date"] for r in sig["assets"]),
-        "params": sig["params"],
+        "strategies": {r["short"]: r["spec"] for r in sig["assets"]},
         "targets": {r["short"]: r["target"] for r in sig["assets"]},
     }, indent=2, ensure_ascii=False))
     new_file = not LOG_FILE.exists()

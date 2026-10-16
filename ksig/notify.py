@@ -38,14 +38,12 @@ def build_message(sig: dict, pages_url: str, reason: str = "change") -> tuple[st
     if reason == "stale":
         lines += ["Dataene er ikke oppdatert som forventet. Signalene under kan være utdaterte.", ""]
     if sig.get("params_changed"):
-        lines += [f"Strategien er endret til: {sig['params_label']}", ""]
+        lines += ["Strategien er endret for minst én coin (se under).", ""]
     lines += [f"Signaler basert på døgnslutt {date} (00:00 UTC).", ""]
     for r in sig["assets"]:
         flag = "→ " if r["changed"] else "  "
-        rsi = "–" if r["rsi"] is None else f"{r['rsi']:.0f}"
-        dist = "–" if r["dist_sma"] is None else f"{r['dist_sma']:+.1%}"
         lines.append(f"{flag}{r['short']}: mål {_pct(r['target'])}  |  {r['action']}")
-        lines.append(f"    Pris {r['close']:,.2f} USD · {dist} fra SMA · RSI {rsi}")
+        lines.append(f"    Pris {r['close']:,.2f} USD · regel: {r['label']}")
         for n in r["notes"]:
             lines.append(f"    • {n}")
         lines.append("")
@@ -61,17 +59,19 @@ def build_message(sig: dict, pages_url: str, reason: str = "change") -> tuple[st
         f"<tr style='background:{'#fff6e0' if r['changed'] else 'transparent'}'>"
         f"<td style='padding:6px 10px'><b>{html.escape(r['short'])}</b></td>"
         f"<td style='padding:6px 10px'>{_pct(r['target'])}</td>"
-        f"<td style='padding:6px 10px'>{html.escape(r['action'])}</td></tr>"
+        f"<td style='padding:6px 10px'>{html.escape(r['action'])}</td>"
+        f"<td style='padding:6px 10px;color:#52514e'>{html.escape(r['label'])}</td></tr>"
         for r in sig["assets"])
     notes_html = "".join(
         f"<li>{html.escape(r['short'])}: {html.escape(n)}</li>" for r in sig["assets"] for n in r["notes"])
     html_body = f"""<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#0b0b0b">
 <p>Signaler basert på døgnslutt <b>{date}</b> (00:00 UTC).</p>
-{'<p><b>Strategien er endret:</b> ' + html.escape(sig['params_label']) + '</p>' if sig.get('params_changed') else ''}
+{'<p><b>Strategien er endret for minst én coin.</b></p>' if sig.get('params_changed') else ''}
 {'<p><b>Advarsel:</b> dataene er ikke oppdatert som forventet.</p>' if reason == 'stale' else ''}
 <table style="border-collapse:collapse;border:1px solid #e1e0d9">
 <tr style="background:#f0efec"><th style="padding:6px 10px;text-align:left">Coin</th>
-<th style="padding:6px 10px;text-align:left">Mål</th><th style="padding:6px 10px;text-align:left">Handling</th></tr>
+<th style="padding:6px 10px;text-align:left">Mål</th><th style="padding:6px 10px;text-align:left">Handling</th>
+<th style="padding:6px 10px;text-align:left">Regel</th></tr>
 {rows_html}</table>
 {'<ul>' + notes_html + '</ul>' if notes_html else ''}
 <p style="color:#52514e;font-size:13px">Målprosenten gjelder andelen av den delen av porteføljen du har satt av til hver coin.

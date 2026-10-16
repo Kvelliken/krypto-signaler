@@ -6,61 +6,53 @@
 pages_url = "https://kvelliken.github.io/krypto-signaler/"
 data_start = "2014-01-01"   # Henter så langt tilbake som kilden har data
 
+# -----------------------------------------------------------------------------
+# Coins og strategi per coin
+# Valgt etter søk over 320 varianter i 7 familier (se research/search.py og
+# research/classic.py). Krav: slå kjøp og hold på avkastning både før og etter
+# oktober 2024, med mindre fall, og med nabo-parametere som også holder.
+# -----------------------------------------------------------------------------
 [[assets]]
 symbol = "BTC-USD"
 short = "BTC"
 name = "Bitcoin"
+strategy = { type = "sma_band", n = 150, band = 0.02, check = "daily" }
 
 [[assets]]
 symbol = "ETH-USD"
 short = "ETH"
 name = "Ethereum"
+strategy = { type = "ens_sma", set = "middels", floor = 0.5, check = "weekly" }
 
 [[assets]]
 symbol = "SOL-USD"
 short = "SOL"
 name = "Solana"
+strategy = { type = "sma_band", n = 200, band = 0.02, check = "daily" }
 
 # -----------------------------------------------------------------------------
-# Gjeldende strategi – brukes til de daglige signalene
-# -----------------------------------------------------------------------------
-[strategy]
-sma = 200            # Trendfilter: ute av markedet når prisen er under snittet
-rsi_period = 14
-rsi_exit = 85        # RSI over dette -> selg ned til trim_to (100 eller mer = av)
-rsi_reentry = 70     # Kjøp tilbake når RSI faller til dette eller lavere
-trim_to = 0.5        # Andel som beholdes etter gevinstsikring
-
-# -----------------------------------------------------------------------------
-# Kostnader og utførelse i backtesten
+# Kostnader og utførelse (Firi)
 # -----------------------------------------------------------------------------
 [costs]
-fee = 0.001          # Kurtasje per handel (0,10 %). Juster til din børs.
-slippage = 0.0005    # Spread og glidning per handel (0,05 %)
+fee = 0.007          # Firi handelsgebyr 0,7 %
+slippage = 0.003     # Påslag i kurs / spread, anslått 0,3 %
 lag_days = 1         # 1 = handler rett etter døgnslutt (00:00 UTC)
                      # 2 = handler et døgn for sent
 
 # -----------------------------------------------------------------------------
-# Walk-forward: parametere velges bare med data fra før testperioden
+# Analyse
 # -----------------------------------------------------------------------------
-[walkforward]
-min_train_days = 730     # Minst 2 år treningsdata før første testperiode
-test_days = 182          # Velg parametere på nytt hvert halvår
-sma = [100, 150, 200, 250]
-rsi_exit = [75, 80, 85, 90, 100]   # 100 = ingen gevinstsikring
-rsi_reentry = [60, 70]
-
-# -----------------------------------------------------------------------------
-# Robusthetstester
-# -----------------------------------------------------------------------------
-[robustness]
-cost_levels = [0.0, 0.0015, 0.004, 0.008, 0.015]   # Total kostnad per handel
+[research]
+eval_warmup_days = 366         # Felles start: etter oppvarming for alle testede familier
+holdout_start = "2024-10-16"   # Data fra og med denne datoen ble ikke brukt til første utvalg
+cost_levels = [0.005, 0.01, 0.015, 0.02, 0.03]
 lag_days = [1, 2, 3]
+bootstrap_block_days = 60
+bootstrap_samples = 2000
 
 # -----------------------------------------------------------------------------
 # Varsler
 # -----------------------------------------------------------------------------
 [alerts]
-near_sma_pct = 0.03      # Merk "nær signal" når prisen er innenfor 3 % av SMA
-near_rsi = 80            # Merk "nær signal" når RSI er over dette
+near_pct = 0.03          # Merk "nær signal" når prisen er innenfor 3 % av en grense
 stale_after_days = 2     # Varsle hvis siste data er eldre enn dette

@@ -102,6 +102,15 @@ details summary { cursor: pointer; color: var(--ink-2); font-size: 14px; margin-
 footer { margin-top: 48px; font-size: 13px; color: var(--muted); }
 a { color: var(--s1); }
 @media (max-width: 520px) { .target { font-size: 30px; } h1 { font-size: 22px; } }
+.rule-list { margin: 8px 0 0; padding-left: 18px; font-size: 13.5px; color: var(--ink-2); }
+.rule-list li { margin-bottom: 2px; }
+.rule-name { font-size: 13px; color: var(--ink-2); margin-top: 2px; }
+.verdict { display: inline-block; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--surface-2); }
+.verdict.yes { background: color-mix(in oklab, var(--good) 16%, transparent); color: var(--good); }
+.verdict.no { background: color-mix(in oklab, var(--bad) 14%, transparent); color: var(--bad); }
+.ok { color: var(--good); font-weight: 600; } .nok { color: var(--muted); }
+.method p, .method li { font-size: 14px; color: var(--ink-2); }
+.method ol { padding-left: 20px; margin: 6px 0 10px; }
 </style>
 </head>
 <body>
@@ -113,13 +122,8 @@ a { color: var(--s1); }
 
   <div id="banner"></div>
   <section class="coins" id="coins"></section>
-
-  <h2>Gjeldende regler</h2>
-  <div class="card">
-    <ol class="rules" id="rules"></ol>
-    <p class="sub" style="margin-top:10px">Målprosenten gjelder den delen av porteføljen du har satt av til hver coin.
-      Signalene beregnes ved døgnslutt 00:00 UTC, og denne siden oppdateres automatisk hver natt.</p>
-  </div>
+  <p class="sub" style="margin-top:12px">Målprosenten gjelder den delen av porteføljen du har satt av til hver coin.
+    Signalene beregnes ved døgnslutt 00:00 UTC, og siden oppdateres automatisk hver natt.</p>
 
   <h2>Backtest: hele porteføljen</h2>
   <p class="sub" id="pf-sub"></p>
@@ -133,6 +137,9 @@ a { color: var(--s1); }
   <h2>Backtest per coin</h2>
   <div class="tabs" role="tablist" id="tabs"></div>
   <div id="asset-panel"></div>
+
+  <h2>Slik ble reglene valgt</h2>
+  <div class="card method" id="method"></div>
 
   <h2>Fallgruver og forutsetninger</h2>
   <div class="pitfalls" id="pitfalls"></div>
@@ -159,12 +166,12 @@ const el = (tag, attrs = {}, html = '') => { const e = document.createElement(ta
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const SERIES = [
   { key: 'strategy', name: 'Strategi', color: '--s1', width: 2 },
-  { key: 'sma_only', name: 'Bare SMA-filter', color: '--s3', width: 1.5 },
   { key: 'buy_hold', name: 'Kjøp og hold', color: '--s2', width: 1.5 },
 ];
-const charts = [];
-
-function stateLabel(t) { return t >= 1 ? 'Fullt investert' : t > 0 ? 'Delvis investert (gevinstsikret)' : 'Ute av markedet'; }
+const fmtVal = (kind, v) => kind === 'money' ? money(v) : kind === 'pct_signed' ? pct(v, 1, true)
+  : kind === 'check' ? (v ? '<span class="ok">Ja</span>' : '<span class="nok">Nei</span>') : nf(v, 0);
+const cls = (kind, v) => kind === 'pct_signed' && v != null ? (v >= 0 ? 'pos' : 'neg') : '';
+function stateLabel(t) { return t >= 1 ? 'Fullt investert' : t > 0 ? 'Delvis investert' : 'Ute av markedet'; }
 
 // ---------- Topp ----------
 const dataDate = S.assets.map(a => a.date).sort().pop();
@@ -172,7 +179,7 @@ document.getElementById('subtitle').textContent =
   `Signaler for døgnslutt ${dataDate} (00:00 UTC) · siden bygget ${S.generated}`;
 document.getElementById('foot-gen').textContent = `Backtest beregnet ${R.generated}`;
 
-const changedNow = S.assets.filter(a => a.prev_day_target != null && a.prev_day_target !== a.target);
+const changedNow = S.assets.filter(a => a.prev_day_target != null && Math.abs(a.prev_day_target - a.target) > 1e-9);
 const banner = document.getElementById('banner');
 if (S.max_stale_days >= 2) {
   banner.innerHTML = `<div class="banner warn"><b>Advarsel:</b> dataene er ikke oppdatert (eldste coin er ${S.max_stale_days} døgn bak). Signalene kan være utdaterte.</div>`;
@@ -186,11 +193,11 @@ if (S.max_stale_days >= 2) {
 // ---------- Coin-kort ----------
 const coins = document.getElementById('coins');
 S.assets.forEach((a, i) => {
-  const changed = a.prev_day_target != null && a.prev_day_target !== a.target;
+  const changed = a.prev_day_target != null && Math.abs(a.prev_day_target - a.target) > 1e-9;
+  const action = !changed ? 'Behold'
+    : a.target === 0 ? 'Selg alt' : a.prev_day_target === 0 ? `Kjøp til ${pct(a.target, 0)}`
+    : a.target < a.prev_day_target ? `Selg ned til ${pct(a.target, 0)}` : `Kjøp opp til ${pct(a.target, 0)}`;
   const card = el('article', { className: 'card coin' + (changed ? ' changed' : '') });
-  const action = changed
-    ? (a.target === 0 ? 'Selg alt' : a.prev_day_target === 0 ? `Kjøp til ${pct(a.target, 0)}` : a.target < a.prev_day_target ? `Selg ned til ${pct(a.target, 0)}` : `Kjøp tilbake til ${pct(a.target, 0)}`)
-    : 'Behold';
   card.innerHTML = `
     <div class="coin-head"><span class="coin-name">${esc(a.name)} <span class="muted">${esc(a.short)}</span></span>
       <span class="tag ${changed ? 'chg' : ''}">${changed ? 'Endret: ' + action : action}</span></div>
@@ -199,32 +206,19 @@ S.assets.forEach((a, i) => {
     <div class="meter" aria-hidden="true"><div style="width:${a.target * 100}%"></div></div>
     <dl class="kv">
       <dt>Sluttkurs</dt><dd>${money(a.close)}</dd>
-      <dt>SMA${S.params.sma}</dt><dd>${money(a.sma)}</dd>
-      <dt>Avstand til SMA</dt><dd class="${a.dist_sma >= 0 ? 'pos' : 'neg'}">${pct(a.dist_sma, 1, true)}</dd>
-      <dt>RSI (${S.params.rsi_period})</dt><dd>${nf(a.rsi, 0)}</dd>
+      ${a.display.map(d => `<dt>${esc(d.name)}</dt><dd class="${cls(d.kind, d.value)}">${fmtVal(d.kind, d.value)}</dd>`).join('')}
     </dl>
     ${a.notes.length ? '<ul class="notes">' + a.notes.map(n => `<li>${esc(n)}</li>`).join('') + '</ul>' : ''}
-    <div class="chart-box"><canvas id="mini-${i}" aria-label="Pris og SMA siste ${a.history.dates.length} dager"></canvas></div>
+    <div class="chart-box"><canvas id="mini-${i}" aria-label="Pris siste ${a.history.dates.length} dager"></canvas></div>
     <div class="strip" id="strip-${i}" title="Eksponering siste ${a.history.dates.length} dager"></div>
-    <div class="strip-legend"><span>${a.history.dates[0]}</span><span>Eksponering (mørkere = mer)</span><span>${a.history.dates.at(-1)}</span></div>`;
+    <div class="strip-legend"><span>${a.history.dates[0]}</span><span>Eksponering (mørkere = mer)</span><span>${a.history.dates.at(-1)}</span></div>
+    <details><summary>Regel: ${esc(a.label)}</summary><ul class="rule-list">${a.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ul></details>`;
   coins.appendChild(card);
 });
 
-// ---------- Regler ----------
-const P = S.params;
-const rules = [
-  `Prisen under ${P.sma}-dagers glidende snitt (SMA${P.sma}) ved døgnslutt → <b>0 %</b> (selg alt).`,
-  `Prisen over SMA${P.sma} → <b>100 %</b>.`,
-];
-if (P.rsi_exit < 100) {
-  rules.push(`RSI(${P.rsi_period}) over ${P.rsi_exit} mens du er fullt investert → selg ned til <b>${pct(P.trim_to, 0)}</b> (gevinstsikring).`);
-  rules.push(`Etter gevinstsikring: kjøp tilbake til 100 % når RSI har falt til ${P.rsi_reentry} eller lavere. Bryter prisen SMA først, gjelder regel 1.`);
-}
-document.getElementById('rules').innerHTML = rules.map(r => `<li>${r}</li>`).join('');
-
-// ---------- Hjelpere for diagrammer ----------
+// ---------- Diagramhjelpere ----------
 function baseOptions(opts = {}) {
-  const grid = css('--grid'), muted = css('--muted');
+  const muted = css('--muted');
   return {
     responsive: true, maintainAspectRatio: false, animation: false,
     interaction: { mode: 'index', intersect: false },
@@ -238,22 +232,20 @@ function baseOptions(opts = {}) {
            border: { color: css('--axis') } },
       y: { type: opts.log ? 'logarithmic' : 'linear', position: 'right',
            ticks: { color: muted, maxTicksLimit: 6, callback: opts.yfmt || (v => nf(v, 0)) },
-           grid: { color: grid }, border: { display: false }, min: opts.min, max: opts.max },
+           grid: { color: css('--grid') }, border: { display: false }, min: opts.min, max: opts.max },
     },
   };
 }
 function legend(target, items) {
   document.getElementById(target).innerHTML = items.map(s => `<span><i style="background:${css(s.color)}"></i>${s.name}</span>`).join('');
 }
+function logTicks(v) { const l = Math.log10(v); return Math.abs(l - Math.round(l)) < 1e-9 || [20, 50, 200, 500, 2000, 5000, 20000, 50000].includes(v) ? nf(v, 0) : ''; }
 function equityChart(canvasId, eq) {
   return new Chart(document.getElementById(canvasId), {
     type: 'line',
     data: { labels: eq.dates, datasets: SERIES.filter(s => eq[s.key]).map(s => ({
-      label: s.name, data: eq[s.key], borderColor: css(s.color), backgroundColor: css(s.color),
-      borderWidth: s.width })) },
-    options: baseOptions({ log: true, yfmt: v => {
-        const l = Math.log10(v); return Math.abs(l - Math.round(l)) < 1e-9 || [20, 50, 200, 500, 2000, 5000].includes(v) ? nf(v, 0) : ''; },
-      tooltip: { label: c => ` ${c.dataset.label}: ${nf(c.parsed.y, 0)} (start 100)` } }),
+      label: s.name, data: eq[s.key], borderColor: css(s.color), backgroundColor: css(s.color), borderWidth: s.width })) },
+    options: baseOptions({ log: true, yfmt: logTicks, tooltip: { label: c => ` ${c.dataset.label}: ${nf(c.parsed.y, 0)} (start 100)` } }),
   });
 }
 function ddChart(canvasId, eq, dd) {
@@ -269,25 +261,21 @@ function ddChart(canvasId, eq, dd) {
 // ---------- Mini-diagram per coin ----------
 S.assets.forEach((a, i) => {
   const h = a.history;
-  charts.push(new Chart(document.getElementById('mini-' + i), {
-    type: 'line',
-    data: { labels: h.dates, datasets: [
-      { label: 'Pris', data: h.close, borderColor: css('--s1'), borderWidth: 1.5 },
-      { label: 'SMA' + S.params.sma, data: h.sma, borderColor: css('--muted'), borderWidth: 1.5, borderDash: [4, 3] },
-    ] },
-    options: (() => { const o = baseOptions({ yfmt: v => nf(v, v > 0 && v < 10 ? 2 : 0),
-      tooltip: { label: c => ` ${c.dataset.label}: ${money(c.parsed.y)}`,
-                 afterBody: items => { const k = items[0].dataIndex; return [`Eksponering: ${pct(h.target[k], 0)}`, `RSI: ${nf(h.rsi[k], 0)}`]; } } });
-      o.scales.x.ticks.display = false; o.scales.y.ticks.maxTicksLimit = 4; return o; })(),
-  }));
-  // Eksponeringsstripe: sammenhengende segmenter
+  const dash = [[4, 3], [1.5, 2.5]];
+  const sets = [{ label: 'Pris', data: h.close, borderColor: css('--s1'), borderWidth: 1.5 }]
+    .concat(h.lines.map((l, k) => ({ label: l.name, data: l.values, borderColor: css('--muted'), borderWidth: 1.5, borderDash: dash[k % 2] })));
+  const o = baseOptions({ yfmt: v => nf(v, v > 0 && v < 10 ? 2 : 0),
+    tooltip: { label: c => ` ${c.dataset.label}: ${money(c.parsed.y)}`,
+               afterBody: items => [`Eksponering: ${pct(h.target[items[0].dataIndex], 0)}`] } });
+  o.scales.x.ticks.display = false; o.scales.y.ticks.maxTicksLimit = 4;
+  new Chart(document.getElementById('mini-' + i), { type: 'line', data: { labels: h.dates, datasets: sets }, options: o });
   const strip = document.getElementById('strip-' + i);
   let start = 0;
   for (let k = 1; k <= h.target.length; k++) {
     if (k === h.target.length || h.target[k] !== h.target[start]) {
       const span = el('span');
       span.style.width = ((k - start) / h.target.length * 100) + '%';
-      span.style.opacity = h.target[start] === 0 ? 0 : h.target[start] < 1 ? 0.45 : 1;
+      span.style.opacity = h.target[start] === 0 ? 0 : 0.25 + 0.75 * h.target[start];
       span.title = `${h.dates[start]} – ${h.dates[k - 1]}: ${pct(h.target[start], 0)}`;
       strip.appendChild(span);
       start = k;
@@ -298,15 +286,15 @@ S.assets.forEach((a, i) => {
 // ---------- Portefølje ----------
 const PF = R.portfolio;
 document.getElementById('pf-sub').textContent =
-  `Lik vekt i ${R.assets.map(a => a.short).join(', ')} fra ${PF.start} (første dag alle har nok historikk). ` +
-  `Etter kurtasje ${pct(R.costs.fee, 2)} + slippage ${pct(R.costs.slippage, 2)} per handel, utførelse ${R.costs.lag_days} døgn etter signal. Logaritmisk skala, start 100.`;
-charts.push(equityChart('pf-equity', PF.equity));
-charts.push(ddChart('pf-dd', PF.equity, PF.drawdown));
+  `Lik vekt i ${R.assets.map(a => a.short).join(', ')} fra ${PF.start}, hver coin med sin egen regel. ` +
+  `Etter Firi-kostnader: ${pct(R.costs.fee, 1)} gebyr + ${pct(R.costs.slippage, 1)} påslag per handel, handel ${R.costs.lag_days} døgn etter signal. Logaritmisk skala, start 100.`;
+equityChart('pf-equity', PF.equity);
+ddChart('pf-dd', PF.equity, PF.drawdown);
 legend('pf-legend', SERIES);
 
 function metricsTable(id, rows) {
   const cols = [
-    ['Avkastning/år', m => pct(m.cagr)], ['Sharpe', m => nf(m.sharpe, 2)], ['Sortino', m => nf(m.sortino, 2)],
+    ['Avkastning/år', m => pct(m.cagr)], ['Sharpe', m => nf(m.sharpe, 2)],
     ['Maks fall', m => pct(m.max_dd)], ['Calmar', m => nf(m.calmar, 2)], ['Volatilitet', m => pct(m.vol, 0)],
     ['Tid i marked', m => pct(m.time_in_market, 0)], ['Handler/år', m => nf(m.trades_per_year, 1)],
     ['Kostnader totalt', m => pct(m.cost_drag)], ['100 $ ble', m => nf(m.final_multiple * 100, 0) + ' $'],
@@ -321,97 +309,111 @@ metricsTable('pf-table', SERIES.map(s => [s.name, PF.metrics[s.key], s.key === '
 // ---------- Per coin ----------
 const tabs = document.getElementById('tabs'), panel = document.getElementById('asset-panel');
 let assetCharts = [];
-function heatColor(v, lo, hi) {
-  if (v == null) return 'transparent';
-  const t = hi > lo ? (v - lo) / (hi - lo) : 0.5;
-  return `color-mix(in oklab, ${css('--seq-hi')} ${Math.round(t * 85)}%, ${css('--seq-lo')})`;
-}
+const DIM_NAMES = { n: 'SMA-lengde', band: 'Bånd', set: 'Sett', floor: 'Kjerne', fast: 'Rask EMA', slow: 'Treg EMA',
+  entry: 'Kjøp (døgn)', exit: 'Salg (døgn)', lookback: 'Periode', stop: 'Stopp', reentry: 'Inn over SMA' };
+const dimFmt = (k, v) => ['band', 'floor', 'stop'].includes(k) ? pct(v, 0) : esc(v);
+const PERIOD_NAMES = { full: 'Hele perioden', dev: 'Før hold-out', holdout: 'Hold-out' };
+
 function renderAsset(idx) {
   assetCharts.forEach(c => c.destroy()); assetCharts = [];
   [...tabs.children].forEach((b, k) => b.setAttribute('aria-selected', k === idx));
-  const A = R.assets[idx], WF = A.walkforward, P = R.strategy;
-  const lagRows = A.lag_sensitivity.map(r => `<tr><td>${r.lag_days} døgn${r.lag_days === R.costs.lag_days ? ' (antatt)' : ''}</td><td>${pct(r.cagr)}</td><td>${nf(r.sharpe, 2)}</td><td>${pct(r.max_dd)}</td></tr>`).join('');
-  const costRows = A.cost_sensitivity.map(r => `<tr><td>${pct(r.cost, 2)}</td><td>${pct(r.cagr)}</td><td>${nf(r.sharpe, 2)}</td><td>${nf(r.final_multiple * 100, 0)} $</td></tr>`).join('');
-  const g = A.grid, flat = g.sharpe.flat().filter(v => v != null), lo = Math.min(...flat), hi = Math.max(...flat);
-  const heat = `<thead><tr><th>SMA \\ RSI-terskel</th>${g.rsi_exit.map(e => `<th>${e >= 100 ? 'Av' : e}</th>`).join('')}</tr></thead><tbody>` +
-    g.sma.map((s, r) => `<tr><td>SMA${s}</td>${g.rsi_exit.map((e, c) => {
-      const v = g.sharpe[r][c], cur = s === P.sma && e === P.rsi_exit;
-      return `<td style="background:${heatColor(v, lo, hi)};${cur ? 'outline:2px solid var(--ink);outline-offset:-2px;font-weight:700' : ''}" title="Avkastning/år ${pct(g.cagr[r][c])}, maks fall ${pct(g.max_dd[r][c])}">${nf(v, 2)}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
-  const yearly = A.yearly.map(y => `<tr><td>${y.year}${y.partial ? '*' : ''}</td><td class="${y.strategy >= 0 ? 'pos' : 'neg'}">${pct(y.strategy, 0)}</td><td class="${y.buy_hold >= 0 ? 'pos' : 'neg'}">${pct(y.buy_hold, 0)}</td><td>${(y.strategy > y.buy_hold ? '+' : '') + nf((y.strategy - y.buy_hold) * 100, 0)} pp</td></tr>`).join('');
-  let wfHtml = '<p class="sub">For lite historikk til walk-forward-test.</p>';
-  if (WF) {
-    const segs = WF.segments.map(s => `<tr><td>${s.start} – ${s.end}</td><td class="l">${esc(s.label)}</td><td>${nf(s.train_sharpe, 2)}</td></tr>`).join('');
-    wfHtml = `<p class="sub">Testperiode ${WF.oos_start} – ${A.data_end}. Hvert halvår velges den av ${WF.n_candidates} parameterkombinasjoner som hadde best Sharpe
-      på all data <i>før</i> perioden. Kombinasjonen som ser best ut på hele historikken (${esc(WF.insample_best.label)}) hadde Sharpe ${nf(WF.insample_best.full_period_sharpe, 2)} totalt,
-      men det tallet bruker fremtidsdata og er derfor for optimistisk.</p>
-      <div class="table-wrap"><table id="wf-table"></table></div>
-      <div class="chart-box mid" style="height:240px"><canvas id="wf-equity"></canvas></div>
-      <details><summary>Valgte parametere per periode</summary><div class="table-wrap"><table>
-      <thead><tr><th>Periode</th><th class="l">Valgt</th><th>Sharpe i trening</th></tr></thead><tbody>${segs}</tbody></table></div></details>`;
+  const A = R.assets[idx];
+  const ms = A.metrics.strategy, mb = A.metrics.buy_hold;
+  const beats = ms.cagr > mb.cagr && ms.max_dd >= mb.max_dd;
+  const perRows = Object.entries(A.periods).map(([k, p]) => {
+    const s = p.strategy, b = p.buy_hold, win = s.cagr > b.cagr;
+    return `<tr><td>${PERIOD_NAMES[k]}<div class="muted" style="font-size:12px">${p.start} – ${p.end}</div></td>
+      <td class="${win ? 'ok' : ''}">${pct(s.cagr)}</td><td>${pct(b.cagr)}</td><td>${pct(s.max_dd)}</td><td>${pct(b.max_dd)}</td>
+      <td>${win ? '<span class="ok">Ja</span>' : '<span class="nok">Nei</span>'}</td></tr>`; }).join('');
+  const lagRows = A.lag_sensitivity.map(r => `<tr><td>${r.lag_days} døgn${r.lag_days === R.costs.lag_days ? ' (antatt)' : ''}</td><td class="${r.cagr > mb.cagr ? 'ok' : ''}">${pct(r.cagr)}</td><td>${nf(r.sharpe, 2)}</td><td>${pct(r.max_dd)}</td></tr>`).join('');
+  const costRows = A.cost_sensitivity.map(r => `<tr><td>${pct(r.cost, 1)}</td><td class="${r.cagr > mb.cagr ? 'ok' : ''}">${pct(r.cagr)}</td><td>${nf(r.sharpe, 2)}</td><td>${pct(r.max_dd)}</td></tr>`).join('');
+  let nb = '<p class="sub">Ikke tilgjengelig for denne regeltypen.</p>';
+  if (A.neighbors) {
+    const g = A.neighbors;
+    const exc = g.cagr.flat().filter(v => v != null).map(v => v - g.buy_hold_cagr);
+    const span = Math.max(...exc.map(Math.abs), 0.01);
+    const cell = (v, cur) => {
+      if (v == null) return '<td class="muted">–</td>';
+      const e = v - g.buy_hold_cagr, t = Math.min(1, Math.abs(e) / span);
+      const col = e >= 0 ? 'var(--s1)' : 'var(--s2)';
+      return `<td style="background:color-mix(in oklab, ${col} ${Math.round(t * 55)}%, transparent);${cur ? 'outline:2px solid var(--ink);outline-offset:-2px;font-weight:700' : ''}">${pct(v, 0)}</td>`;
+    };
+    nb = `<p class="sub">Avkastning per år for nærliggende varianter. Blått = slår kjøp og hold (${pct(g.buy_hold_cagr, 0)}), oransje = taper. Rammen er valgt regel.</p>
+      <div class="table-wrap"><table><thead><tr><th>${DIM_NAMES[g.dim1] || g.dim1} \\ ${DIM_NAMES[g.dim2] || g.dim2}</th>${g.values2.map(v => `<th>${dimFmt(g.dim2, v)}</th>`).join('')}</tr></thead><tbody>` +
+      g.values1.map((v1, r) => `<tr><td>${dimFmt(g.dim1, v1)}</td>${g.values2.map((v2, c) => cell(g.cagr[r][c], v1 === g.current[0] && v2 === g.current[1])).join('')}</tr>`).join('') +
+      `</tbody></table></div>`;
   }
+  const yearly = A.yearly.map(y => `<tr><td>${y.year}${y.partial ? '*' : ''}</td><td class="${y.strategy >= 0 ? 'pos' : 'neg'}">${pct(y.strategy, 0)}</td><td class="${y.buy_hold >= 0 ? 'pos' : 'neg'}">${pct(y.buy_hold, 0)}</td><td>${(y.strategy > y.buy_hold ? '+' : '') + nf((y.strategy - y.buy_hold) * 100, 0)} pp</td></tr>`).join('');
+
   panel.innerHTML = `
     <div class="card">
-      <p class="sub">Data fra ${A.data_start}. Evaluering fra ${A.eval_start} (etter oppvarming for lengste SMA i testene) til ${A.data_end}.</p>
+      <p style="margin-bottom:6px"><b>${esc(A.label)}</b> <span class="verdict ${beats ? 'yes' : 'no'}">${beats ? 'Slår kjøp og hold over hele perioden' : 'Slår ikke kjøp og hold over hele perioden'}</span></p>
+      <ul class="rule-list" style="margin-bottom:10px">${A.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ul>
+      <p class="sub">Evaluering ${A.eval_start} – ${A.data_end} (data fra ${A.data_start}).
+        Strategien slo kjøp og hold i ${A.years_beaten} av ${A.years_total} hele år.
+        I ${pct(A.prob_beats, 0)} av 2 000 omstokkede historikker (blokk-bootstrap) endte strategien over kjøp og hold.</p>
       <div class="chart-box tall"><canvas id="a-equity"></canvas></div>
       <div class="legend" id="a-legend"></div>
       <div class="chart-box mid"><canvas id="a-dd"></canvas></div>
     </div>
     <div class="card table-wrap" style="margin-top:14px"><table id="a-table"></table></div>
-    <h3>Walk-forward (out-of-sample)</h3>
-    <div class="card">${wfHtml}</div>
+    <div class="card" style="margin-top:14px"><h3 style="margin-top:0">Delperioder</h3>
+      <p class="sub">Hold-out er perioden fra ${R.holdout_start}, som ikke ble brukt i første runde av søket.</p>
+      <div class="table-wrap"><table><thead><tr><th>Periode</th><th>Strategi/år</th><th>Kjøp og hold/år</th><th>Maks fall strategi</th><th>Maks fall K&amp;H</th><th>Slår K&amp;H</th></tr></thead><tbody>${perRows}</tbody></table></div></div>
     <div class="grid2" style="margin-top:14px">
-      <div class="card"><h3 style="margin-top:0">Kostnadsfølsomhet</h3>
-        <p class="sub">Total kostnad per handel. Kjøp og hold ga ${pct(A.buy_hold_reference.cagr)}/år.</p>
-        <div class="table-wrap"><table><thead><tr><th>Kostnad per handel</th><th>Avk./år</th><th>Sharpe</th><th>100 $ ble</th></tr></thead><tbody>${costRows}</tbody></table></div></div>
-      <div class="card"><h3 style="margin-top:0">Forsinket utførelse</h3>
-        <p class="sub">Hva skjer om du handler et eller to døgn etter signalet?</p>
-        <div class="table-wrap"><table><thead><tr><th>Handler etter</th><th>Avk./år</th><th>Sharpe</th><th>Maks fall</th></tr></thead><tbody>${lagRows}</tbody></table></div></div>
+      <div class="card"><h3 style="margin-top:0">Nabo-parametere</h3>${nb}</div>
+      <div class="card"><h3 style="margin-top:0">Kostnad per handel</h3>
+        <p class="sub">Grønt = slår fortsatt kjøp og hold (${pct(mb.cagr)}/år).</p>
+        <div class="table-wrap"><table><thead><tr><th>Kostnad</th><th>Avk./år</th><th>Sharpe</th><th>Maks fall</th></tr></thead><tbody>${costRows}</tbody></table></div></div>
     </div>
     <div class="grid2" style="margin-top:14px">
-      <div class="card"><h3 style="margin-top:0">Parameterkart (Sharpe)</h3>
-        <p class="sub">Robust strategi = gode tall også i nabocellene, ikke bare i én. Rammen er gjeldende valg. Hold over for avkastning og maks fall.</p>
-        <div class="table-wrap"><table class="heat">${heat}</table></div></div>
+      <div class="card"><h3 style="margin-top:0">Forsinket handel</h3>
+        <p class="sub">Hva skjer om du handler et eller to døgn etter signalet?</p>
+        <div class="table-wrap"><table><thead><tr><th>Handler etter</th><th>Avk./år</th><th>Sharpe</th><th>Maks fall</th></tr></thead><tbody>${lagRows}</tbody></table></div></div>
       <div class="card"><h3 style="margin-top:0">År for år</h3>
-        <div class="table-wrap"><table><thead><tr><th>År</th><th>Strategi</th><th>Kjøp og hold</th><th>Forskjell (pp)</th></tr></thead><tbody>${yearly}</tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>År</th><th>Strategi</th><th>Kjøp og hold</th><th>Forskjell</th></tr></thead><tbody>${yearly}</tbody></table></div>
         <p class="sub" style="margin-top:6px">* Delvis år.</p></div>
     </div>`;
   assetCharts.push(equityChart('a-equity', A.equity));
   assetCharts.push(ddChart('a-dd', A.equity, A.drawdown));
   legend('a-legend', SERIES);
   metricsTable('a-table', SERIES.map(s => [s.name, A.metrics[s.key], s.key === 'strategy']));
-  if (WF) {
-    const wfRows = [['Walk-forward', WF.metrics.walk_forward, true], ['Gjeldende strategi', WF.metrics.baseline],
-      ['Bare SMA-filter', WF.metrics.sma_only], ['Kjøp og hold', WF.metrics.buy_hold]];
-    metricsTable('wf-table', wfRows);
-    const eq = WF.equity;
-    assetCharts.push(new Chart(document.getElementById('wf-equity'), {
-      type: 'line',
-      data: { labels: eq.dates, datasets: [
-        { label: 'Walk-forward', data: eq.walk_forward, borderColor: css('--s1'), borderWidth: 2 },
-        { label: 'Gjeldende strategi', data: eq.baseline, borderColor: css('--muted'), borderWidth: 1.5, borderDash: [4, 3] },
-        { label: 'Kjøp og hold', data: eq.buy_hold, borderColor: css('--s2'), borderWidth: 1.5 },
-      ] },
-      options: baseOptions({ log: true, yfmt: v => nf(v, 0), tooltip: { label: c => ` ${c.dataset.label}: ${nf(c.parsed.y, 0)}` } }),
-    }));
-  }
 }
-R.assets.forEach((a, i) => {
-  const b = el('button', { type: 'button', role: 'tab', textContent: a.name, onclick: () => renderAsset(i) });
-  tabs.appendChild(b);
-});
+R.assets.forEach((a, i) => tabs.appendChild(el('button', { type: 'button', role: 'tab', textContent: a.name, onclick: () => renderAsset(i) })));
 renderAsset(0);
+
+// ---------- Metode ----------
+const SR = R.search;
+let wfText = '';
+if (SR && SR.walk_forward) {
+  wfText = `<p><b>Viktig forbehold.</b> Da vi lot søket velge regel på nytt hvert halvår, bare med data fra før perioden
+    (walk-forward), slo det ikke kjøp og hold på avkastning for noen coin:</p><ul>` +
+    Object.entries(SR.walk_forward).map(([k, w]) => `<li>${esc(k)} fra ${w.start}: ${pct(w.strategy_cagr)}/år mot ${pct(w.buy_hold_cagr)}/år for kjøp og hold
+      (maks fall ${pct(w.strategy_dd, 0)} mot ${pct(w.buy_hold_dd, 0)}).</li>`).join('') +
+    `</ul><p>Det betyr at et søk som «lærer» av historikken, lett velger det som tilfeldigvis traff. De valgte reglene er derfor
+    enkle, kjente trendfiltre som holdt seg gode i alle delperioder og for nærliggende parametere. Fordelen i avkastning er
+    likevel usikker. Den mest stabile gevinsten er klart mindre fall.</p>`;
+}
+document.getElementById('method').innerHTML = `
+  <ol>
+    <li>${SR ? SR.n_candidates : 'Over 300'} varianter fra sju familier ble testet per coin: SMA med bånd, EMA-kryss, Donchian-utbrudd,
+      momentum, glidende stopp og to typer ensembler, med daglig eller ukentlig sjekk.</li>
+    <li>Alle tall er etter Firi-kostnader (${pct(R.costs.fee + R.costs.slippage, 1)} per handel) og med handel døgnet etter signalet.</li>
+    <li>Kravet var høyere årlig avkastning enn kjøp og hold <i>og</i> mindre maks fall – både før og etter ${R.holdout_start}.</li>
+    <li>En regel ble bare godtatt hvis nabo-parameterne også gjorde det bra, og hvis den tålte høyere kostnader og forsinket handel.</li>
+  </ol>${wfText}`;
 
 // ---------- Fallgruver ----------
 const pit = [
-  ['Kurtasje og slippage', `Hver handel koster ${pct(R.costs.fee, 2)} kurtasje + ${pct(R.costs.slippage, 2)} slippage i backtesten. Mange norske plattformer tar mer (ofte 0,5–1 % inkl. spread). Se kostnadstabellen per coin.`],
-  ['Forsinket utførelse', `Backtesten antar at du handler ${R.costs.lag_days === 1 ? 'kort tid etter døgnslutt, til omtrent sluttkursen' : R.costs.lag_days + ' døgn etter signalet'}. Handler du senere, blir resultatet et annet – se tabellen for forsinkelse.`],
-  ['Overtilpasning', 'Parametere som ser best ut på historikken, er nesten alltid for optimistiske. Walk-forward-testen viser hva man ville fått ved å velge parametere uten å kjenne fremtiden.'],
-  ['Utvalgsskjevhet', 'BTC, ETH og SOL er valgt fordi de overlevde og vokste. Mange andre coins gikk mot null. Resultatene sier derfor lite om nye eller mindre coins.'],
-  ['Kort historikk', 'SOL har data fra 2020 og ETH fra slutten av 2017 hos Yahoo. Få fulle markedssykluser gir stor usikkerhet i tallene.'],
-  ['Skatt', 'I Norge skattlegges gevinst ved hvert salg (22 %), også ved bytte mellom coins. En strategi som selger ofte, realiserer gevinster tidligere enn kjøp og hold. Skatt er ikke trukket fra i backtesten.'],
-  ['Datakvalitet', 'Prisene er døgnpriser fra Yahoo Finance (USD), med Coinbase som reserve. Prisen hos din børs kan avvike, særlig i urolige markeder. Bare lukkede døgn brukes.'],
-  ['Kontanter', 'Ute av markedet antas 0 % avkastning. Penger i bank eller rentebærende stablecoins ville gitt noe, men med egne risikoer.'],
-  ['Ekstremhendelser', 'Børser kan stanse uttak eller handel, og priser kan gappe forbi signalnivåer. Backtesten kan ikke fange slike hendelser.'],
+  ['Kostnader på Firi', `Backtesten bruker ${pct(R.costs.fee, 1)} gebyr + ${pct(R.costs.slippage, 1)} påslag per handel. Se tabellen for kostnad per coin – reglene er valgt for å handle sjelden.`],
+  ['Forsinket handel', `Backtesten antar at du handler kort tid etter døgnslutt (00:00 UTC), til omtrent sluttkursen. Se tabellen for hva ett eller to døgns forsinkelse betyr.`],
+  ['Overtilpasning', 'Reglene er valgt etter å ha sett hele historikken. Walk-forward-testen viser at slike valg ofte ser bedre ut i ettertid enn de blir fremover.'],
+  ['Utvalgsskjevhet', 'BTC, ETH og SOL er valgt fordi de overlevde og vokste. Resultatene sier lite om andre coins.'],
+  ['Kort historikk', 'SOL har data fra 2020 og ETH fra slutten av 2017. Få markedssykluser gir stor usikkerhet.'],
+  ['Skatt', 'Gevinster skattlegges årlig. Skatt er ikke trukket fra i backtesten.'],
+  ['Datakvalitet og valuta', 'Prisene er døgnpriser i USD fra Yahoo Finance, med Coinbase som reserve. Firi handler i NOK, så kursen hos Firi kan avvike noe.'],
+  ['Kontanter', 'Ute av markedet antas 0 % avkastning.'],
+  ['Ekstremhendelser', 'Børser kan stanse handel, og priser kan hoppe forbi signalnivåer. Det fanger ikke backtesten.'],
 ];
 document.getElementById('pitfalls').innerHTML = pit.map(([t, b]) => `<div class="card"><h3>${t}</h3><p>${b}</p></div>`).join('');
 
@@ -422,7 +424,6 @@ document.getElementById('log').innerHTML = log.length
     log.map(r => `<tr><td>${esc(r.data_date)}</td><td>${esc(r.coin)}</td><td>${r.fra === '' ? '–' : pct(+r.fra, 0)}</td><td>${pct(+r.til, 0)}</td><td>${money(+r.pris)}</td><td class="l">${esc(r.handling)}</td></tr>`).join('') + '</tbody>'
   : '<tbody><tr><td class="l">Ingen signaler logget ennå.</td></tr></tbody>';
 
-// Oppdater fargene hvis brukeren bytter mellom lys og mørk modus
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => location.reload());
 </script>
 </body>

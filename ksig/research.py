@@ -1,13 +1,13 @@
-"""Analyse: baseline, robusthet, walk-forward og portefølje.
+"""Analyse av gjeldende strategi per coin mot kjøp og hold.
 
-Resultatet lagres i results/research.json og vises på nettsiden.
-
-Rettferdig sammenligning: alle varianter for en coin evalueres fra samme
-startdato (første dag der den lengste SMA-en i rutenettet er tilgjengelig).
+Alt beregnes etter Firi-kostnader og lagres i results/research.json.
+Delperioder:
+  full      – hele evalueringsperioden
+  dev       – før hold-out (perioden reglene først ble valgt på)
+  holdout   – fra og med holdout_start
 """
 from __future__ import annotations
 
-import itertools
 import json
 import math
 from datetime import datetime, timezone
@@ -15,28 +15,41 @@ from datetime import datetime, timezone
 import numpy as np
 import pandas as pd
 
-from .backtest import Costs, metrics, sharpe_of, simulate, yearly_returns
+from . import strategies as S
+from .backtest import Costs, metrics, simulate, yearly_returns
 from .config import RESULTS_DIR
 from .data import load_prices
-from .strategy import Params, compute, warmup_days
 
 BH = "buy_hold"
 
+# Nabolagskart per familie: (dim1, verdier), (dim2, verdier)
+NEIGHBOR_DIMS = {
+    "sma_band": (("n", [100, 125, 150, 175, 200, 250]), ("band", [0.0, 0.01, 0.02, 0.03, 0.05])),
+    "ens_sma": (("set", ["kort", "middels", "lang"]), ("floor", [0.0, 0.25, 0.5])),
+    "ens_mom": (("set", ["kort", "middels", "lang"]), ("floor", [0.0, 0.25, 0.5])),
+    "ema_cross": (("fast", [10, 20, 30, 50]), ("slow", [50, 100, 150, 200])),
+    "donchian": (("entry", [20, 30, 50, 75, 100]), ("exit", [10, 20, 30, 50, 75])),
+    "tsmom": (("lookback", [60, 90, 120, 180, 270, 365]), ("band", [0.0, 0.05, 0.1, 0.2])),
+    "trail": (("stop", [0.2, 0.25, 0.3, 0.4, 0.5]), ("reentry", [50, 100, 150, 200])),
+}
 
-def _grid(cfg: dict, base: Params) -> list[Params]:
-    wf = cfg["walkforward"]
-    seen, out = set(), []
-    for s, e, r in itertools.product(wf["sma"], wf["rsi_exit"], wf["rsi_reentry"]):
-        p = Params(sma=s, rsi_period=base.rsi_period, rsi_exit=e,
-                   rsi_reentry=r if e < 100 else 0, trim_to=base.trim_to)
-        if p not in seen:
-            seen.add(p)
-            out.append(p)
-    return out
+
+def _clean(obj):
+    if isinstance(obj, (float, np.floating)):
+        obj = float(obj)
+        return None if math.isnan(obj) or math.isinf(obj) else round(obj, 6)
+    if isinstance(obj, dict):
+        return {k: _clean(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_clean(v) for v in obj]
+    if isinstance(obj, np.integer):
+        return int(obj)
+    if isinstance(obj, np.bool_):
+        return bool(obj)
+    return obj
 
 
 def _downsample(res_map: dict[str, pd.DataFrame], step: int = 3) -> dict:
-    """Egenkapitalkurver for nettsiden (hver n-te dag + siste dag)."""
     any_res = next(iter(res_map.values()))
     idx = list(range(0, len(any_res), step))
     if idx[-1] != len(any_res) - 1:
@@ -48,7 +61,7 @@ def _downsample(res_map: dict[str, pd.DataFrame], step: int = 3) -> dict:
     return out
 
 
-def _drawdown_series(res: pd.DataFrame, step: int = 3) -> list[float]:
+def _drawdown(res: pd.DataFrame, step: int = 3) -> list[float]:
     eq = res["equity"]
     dd = (eq / eq.cummax() - 1).to_numpy()
     idx = list(range(0, len(dd), step))
@@ -57,158 +70,116 @@ def _drawdown_series(res: pd.DataFrame, step: int = 3) -> list[float]:
     return [round(float(dd[i]) * 100, 2) for i in idx]
 
 
-def _clean(obj):
-    if isinstance(obj, float):
-        return None if math.isnan(obj) or math.isinf(obj) else round(obj, 6)
-    if isinstance(obj, dict):
-        return {k: _clean(v) for k, v in obj.items()}
-    if isinstance(obj, (list, tuple)):
-        return [_clean(v) for v in obj]
-    if isinstance(obj, (np.floating,)):
-        return _clean(float(obj))
-    if isinstance(obj, (np.integer,)):
-        return int(obj)
-    return obj
-
-
-def walk_forward(close: pd.Series, eval_start: pd.Timestamp, grid: list[Params],
-                 targets: dict[Params, pd.Series], costs: Costs, cfg: dict) -> dict | None:
-    """Ekspanderende walk-forward.
-
-    For hver testperiode velges parameterne med høyest Sharpe (etter
-    kostnader) på ALL data før perioden. De valgte parameterne brukes så
-    på perioden etterpå, som modellen ikke har sett. Testperiodene skjøtes
-    sammen til én sammenhengende out-of-sample-kurve.
-    """
-    wf = cfg["walkforward"]
-    c = close[close.index >= eval_start]
-    full_ret = {p: simulate(c, targets[p], costs)["ret"] for p in grid}
-
-    first_test = eval_start + pd.Timedelta(days=wf["min_train_days"])
-    if first_test >= c.index[-1] - pd.Timedelta(days=60):
-        return None
-    starts = list(pd.date_range(first_test, c.index[-1], freq=f"{wf['test_days']}D"))
-    segments, stitched = [], pd.Series(0.0, index=c.index)
-    for k, seg_start in enumerate(starts):
-        seg_end = starts[k + 1] - pd.Timedelta(days=1) if k + 1 < len(starts) else c.index[-1]
-        train_mask = c.index < seg_start
-        scores = {p: sharpe_of(full_ret[p][train_mask]) for p in grid}
-        best = max(grid, key=lambda p: scores[p])
-        seg_mask = (c.index >= seg_start) & (c.index <= seg_end)
-        stitched[seg_mask] = targets[best][c.index[seg_mask]]
-        segments.append({"start": str(seg_start.date()), "end": str(seg_end.date()),
-                         "params": best.to_dict(), "label": best.label(),
-                         "train_sharpe": scores[best]})
-
-    oos = c[c.index >= first_test]
-    base = Params.from_cfg(cfg["strategy"])
-    sma_only = Params(sma=base.sma, rsi_exit=100, rsi_reentry=0)
-    res = {
-        "walk_forward": simulate(oos, stitched[oos.index], costs),
-        "baseline": simulate(oos, targets[base][oos.index], costs),
-        "sma_only": simulate(oos, targets[sma_only][oos.index], costs),
-        BH: simulate(oos, pd.Series(1.0, index=oos.index), costs),
-    }
-    # Optimismegap: beste parametere på HELE historikken (inkl. fremtiden)
-    is_scores = {p: sharpe_of(full_ret[p]) for p in grid}
-    is_best = max(grid, key=lambda p: is_scores[p])
-    is_best_oos = simulate(oos, targets[is_best][oos.index], costs)
-    return {
-        "oos_start": str(first_test.date()),
-        "segments": segments,
-        "metrics": {k: metrics(v) for k, v in res.items()},
-        "insample_best": {
-            "label": is_best.label(), "params": is_best.to_dict(),
-            "full_period_sharpe": is_scores[is_best],
-            "oos_period_sharpe": metrics(is_best_oos)["sharpe"],
-        },
-        "equity": _downsample(res),
-        "n_candidates": len(grid),
-    }
+def bootstrap_prob(r_s: np.ndarray, r_b: np.ndarray, block: int, n: int, seed: int = 0) -> float:
+    """Andel av blokk-bootstrap-utvalg der strategien ender over kjøp og hold."""
+    rng = np.random.default_rng(seed)
+    d = np.log1p(r_s) - np.log1p(r_b)
+    L = len(d)
+    nb = L // block + 1
+    wins = 0
+    for _ in range(n):
+        st = rng.integers(0, L - block, nb)
+        idx = (st[:, None] + np.arange(block)).ravel()[:L]
+        wins += d[idx].sum() > 0
+    return wins / n
 
 
 def analyze_asset(asset: dict, cfg: dict) -> dict:
-    df = load_prices(asset["symbol"])
-    close = df["Close"]
-    base = Params.from_cfg(cfg["strategy"])
+    rc = cfg["research"]
     costs = Costs.from_cfg(cfg["costs"])
-    grid = _grid(cfg, base)
-    sma_only = Params(sma=base.sma, rsi_exit=100, rsi_reentry=0)
-    all_params = list(dict.fromkeys([base, sma_only, *grid]))
-
-    warm = max(warmup_days(p) for p in all_params)
-    eval_start = close.index[min(warm, len(close) - 1)]
-    targets = {p: compute(close, p)["target"] for p in all_params}
+    spec = asset["strategy"]
+    close = load_prices(asset["symbol"])["Close"]
+    start_idx = min(max(rc["eval_warmup_days"], S.warmup(spec)), len(close) - 2)
+    eval_start = close.index[start_idx]
+    holdout = pd.Timestamp(rc["holdout_start"])
     c = close[close.index >= eval_start]
+    target = S.run(close, spec)["target"]
+    one = pd.Series(1.0, index=close.index)
 
-    def run(p: Params | None, cst: Costs = costs) -> pd.DataFrame:
-        tgt = pd.Series(1.0, index=c.index) if p is None else targets[p][c.index]
-        return simulate(c, tgt, cst)
+    def sim(tgt, a=None, b=None, cst=costs):
+        cc = c if a is None else c[(c.index >= a) & (c.index <= b)]
+        return simulate(cc, tgt[cc.index], cst)
 
-    main = {"strategy": run(base), "sma_only": run(sma_only), BH: run(None)}
+    main = {"strategy": sim(target), BH: sim(one)}
+    periods = {
+        "full": (c.index[0], c.index[-1]),
+        "dev": (c.index[0], holdout - pd.Timedelta(days=1)),
+        "holdout": (holdout, c.index[-1]),
+    }
+    per = {}
+    for name, (a, b) in periods.items():
+        if (c.index >= a).sum() < 30 or a >= b:
+            continue
+        per[name] = {"start": str(a.date()), "end": str(b.date()),
+                     "strategy": metrics(sim(target, a, b)), BH: metrics(sim(one, a, b))}
 
-    # Kostnadsfølsomhet (fordelt som kurtasje, ingen ekstra slippage)
     cost_sens = []
-    for lvl in cfg["robustness"]["cost_levels"]:
-        cst = Costs(fee=lvl, slippage=0.0, lag_days=costs.lag_days)
-        m = metrics(run(base, cst))
+    for lvl in rc["cost_levels"]:
+        m = metrics(sim(target, cst=Costs(fee=lvl, slippage=0.0, lag_days=costs.lag_days)))
         cost_sens.append({"cost": lvl, "cagr": m["cagr"], "sharpe": m["sharpe"],
-                          "final_multiple": m["final_multiple"], "max_dd": m["max_dd"]})
-    bh_m = metrics(main[BH])
-
-    # Forsinkelse i utførelse
+                          "max_dd": m["max_dd"], "final_multiple": m["final_multiple"]})
     lag_sens = []
-    for lag in cfg["robustness"]["lag_days"]:
-        cst = Costs(fee=costs.fee, slippage=costs.slippage, lag_days=lag)
-        m = metrics(run(base, cst))
-        lag_sens.append({"lag_days": lag, "cagr": m["cagr"], "sharpe": m["sharpe"],
-                         "max_dd": m["max_dd"], "final_multiple": m["final_multiple"]})
+    for lag in rc["lag_days"]:
+        m = metrics(sim(target, cst=Costs(fee=costs.fee, slippage=costs.slippage, lag_days=lag)))
+        lag_sens.append({"lag_days": lag, "cagr": m["cagr"], "sharpe": m["sharpe"], "max_dd": m["max_dd"]})
 
-    # Parameterrutenett (reentry = baseline-verdien)
-    wf = cfg["walkforward"]
-    grid_tbl = {"sma": wf["sma"], "rsi_exit": wf["rsi_exit"], "sharpe": [], "cagr": [], "max_dd": []}
-    for s in wf["sma"]:
-        row_s, row_c, row_d = [], [], []
-        for e in wf["rsi_exit"]:
-            p = Params(sma=s, rsi_period=base.rsi_period, rsi_exit=e,
-                       rsi_reentry=base.rsi_reentry if e < 100 else 0, trim_to=base.trim_to)
-            if p not in targets:
-                targets[p] = compute(close, p)["target"]
-            m = metrics(run(p))
-            row_s.append(m["sharpe"]); row_c.append(m["cagr"]); row_d.append(m["max_dd"])
-        grid_tbl["sharpe"].append(row_s); grid_tbl["cagr"].append(row_c); grid_tbl["max_dd"].append(row_d)
+    # Nabolagskart: samme familie, nærliggende parametere
+    fam = spec["type"]
+    grid = None
+    if fam in NEIGHBOR_DIMS:
+        (k1, v1), (k2, v2) = NEIGHBOR_DIMS[fam]
+        v1 = list(v1) if spec[k1] in v1 else sorted([*v1, spec[k1]])
+        v2 = list(v2) if spec[k2] in v2 else sorted([*v2, spec[k2]])
+        cagr = []
+        for a in v1:
+            row = []
+            for b in v2:
+                s2 = {**spec, k1: a, k2: b}
+                if fam == "ema_cross" and s2["fast"] >= s2["slow"]:
+                    row.append(None)
+                    continue
+                row.append(metrics(sim(S.run(close, s2)["target"]))["cagr"])
+            cagr.append(row)
+        grid = {"dim1": k1, "values1": v1, "dim2": k2, "values2": v2, "cagr": cagr,
+                "current": [spec[k1], spec[k2]], "buy_hold_cagr": metrics(main[BH])["cagr"]}
 
     yr_s, yr_b = yearly_returns(main["strategy"]), yearly_returns(main[BH])
     yearly = [{"year": int(y), "strategy": float(yr_s[y]), "buy_hold": float(yr_b[y]),
                "partial": bool(y == yr_s.index[0] or y == yr_s.index[-1])} for y in yr_s.index]
+    full_years = [y for y in yearly if not y["partial"]]
+
+    prob = bootstrap_prob(main["strategy"]["ret"].to_numpy(), main[BH]["ret"].to_numpy(),
+                          rc["bootstrap_block_days"], rc["bootstrap_samples"])
 
     return {
         "symbol": asset["symbol"], "short": asset["short"], "name": asset["name"],
+        "spec": spec, "label": S.label(spec), "rules": S.rules(spec),
         "data_start": str(close.index[0].date()), "data_end": str(close.index[-1].date()),
         "eval_start": str(eval_start.date()),
         "metrics": {k: metrics(v) for k, v in main.items()},
+        "periods": per,
         "equity": _downsample(main),
-        "drawdown": {k: _drawdown_series(v) for k, v in main.items()},
+        "drawdown": {k: _drawdown(v) for k, v in main.items()},
         "cost_sensitivity": cost_sens,
-        "buy_hold_reference": {"cagr": bh_m["cagr"], "sharpe": bh_m["sharpe"], "max_dd": bh_m["max_dd"]},
         "lag_sensitivity": lag_sens,
-        "grid": grid_tbl,
-        "walkforward": walk_forward(close, eval_start, grid, targets, costs, cfg),
+        "neighbors": grid,
         "yearly": yearly,
-        "_frames": {"close": close, "targets": targets, "base": base, "sma_only": sma_only},
+        "years_beaten": sum(1 for y in full_years if y["strategy"] > y["buy_hold"]),
+        "years_total": len(full_years),
+        "prob_beats": prob,
+        "_frames": {"close": close, "target": target, "eval_start": eval_start},
     }
 
 
 def portfolio(assets: list[dict], cfg: dict) -> dict:
     """Lik vekt (1/3) per coin fra felles startdato, uten rebalansering mellom coins."""
     costs = Costs.from_cfg(cfg["costs"])
-    start = max(pd.Timestamp(a["eval_start"]) for a in assets)
-    sleeves = {"strategy": [], "sma_only": [], BH: []}
+    start = max(a["_frames"]["eval_start"] for a in assets)
+    sleeves = {"strategy": [], BH: []}
     for a in assets:
         f = a["_frames"]
         c = f["close"][f["close"].index >= start]
-        sleeves["strategy"].append(simulate(c, f["targets"][f["base"]][c.index], costs))
-        sleeves["sma_only"].append(simulate(c, f["targets"][f["sma_only"]][c.index], costs))
+        sleeves["strategy"].append(simulate(c, f["target"][c.index], costs))
         sleeves[BH].append(simulate(c, pd.Series(1.0, index=c.index), costs))
     combined = {}
     for key, parts in sleeves.items():
@@ -216,34 +187,47 @@ def portfolio(assets: list[dict], cfg: dict) -> dict:
         for p in parts[1:]:
             idx = idx.intersection(p.index)
         eq = sum(p["equity"].reindex(idx) for p in parts) / len(parts)
-        cost = sum(p["cost"].reindex(idx) for p in parts) / len(parts)
-        traded = sum(p["traded"].reindex(idx) for p in parts)
-        expo = sum(p["exposure"].reindex(idx) for p in parts) / len(parts)
         ret = eq.pct_change()
         ret.iloc[0] = eq.iloc[0] - 1
-        combined[key] = pd.DataFrame({"equity": eq, "ret": ret, "cost": cost,
-                                      "traded": traded, "exposure": expo})
+        combined[key] = pd.DataFrame({
+            "equity": eq, "ret": ret,
+            "cost": sum(p["cost"].reindex(idx) for p in parts) / len(parts),
+            "traded": sum(p["traded"].reindex(idx) for p in parts),
+            "exposure": sum(p["exposure"].reindex(idx) for p in parts) / len(parts)})
     yr_s, yr_b = yearly_returns(combined["strategy"]), yearly_returns(combined[BH])
     return {
         "start": str(start.date()),
         "metrics": {k: metrics(v) for k, v in combined.items()},
         "equity": _downsample(combined),
-        "drawdown": {k: _drawdown_series(v) for k, v in combined.items()},
+        "drawdown": {k: _drawdown(v) for k, v in combined.items()},
         "yearly": [{"year": int(y), "strategy": float(yr_s[y]), "buy_hold": float(yr_b[y]),
                     "partial": bool(y == yr_s.index[0] or y == yr_s.index[-1])} for y in yr_s.index],
     }
+
+
+def _search_summary() -> dict | None:
+    """Kort sammendrag av søket (fra research/search.py), hvis det finnes."""
+    path = RESULTS_DIR / "search.json"
+    if not path.exists():
+        return None
+    data = json.loads(path.read_text())
+    o1 = data.get("methods", {}).get("O1", {})
+    return {"n_candidates": data.get("n_candidates"),
+            "walk_forward": {k: {"start": v["start"], "strategy_cagr": v["strategy"]["cagr"],
+                                 "buy_hold_cagr": v["buy_hold"]["cagr"],
+                                 "strategy_dd": v["strategy"]["max_dd"], "buy_hold_dd": v["buy_hold"]["max_dd"]}
+                             for k, v in o1.items()}}
 
 
 def run_research(cfg: dict, save: bool = True) -> dict:
     assets = [analyze_asset(a, cfg) for a in cfg["assets"]]
     result = {
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        "strategy": Params.from_cfg(cfg["strategy"]).to_dict(),
-        "strategy_label": Params.from_cfg(cfg["strategy"]).label(),
         "costs": cfg["costs"],
-        "walkforward_cfg": {k: cfg["walkforward"][k] for k in ("min_train_days", "test_days")},
+        "holdout_start": cfg["research"]["holdout_start"],
         "portfolio": portfolio(assets, cfg),
         "assets": [{k: v for k, v in a.items() if k != "_frames"} for a in assets],
+        "search": _search_summary(),
     }
     result = _clean(result)
     if save:

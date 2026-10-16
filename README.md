@@ -17,14 +17,18 @@ Hver natt kl. 00:35 UTC kjører GitHub Actions denne jobben:
 4. Sammenligner med forrige varslede posisjon. Ved endring sendes **e-post** og det opprettes en **issue**.
 5. Lagrer data og tilstand i repoet og publiserer nettsiden på GitHub Pages.
 
-## Gjeldende strategi
+## Gjeldende strategi (egen regel per coin)
 
-Se `[strategy]` i `config.toml`. Utgangspunktet er:
+Satt under `[[assets]]` i `config.toml`. Alle tall er etter Firi-kostnader (0,7 % + 0,3 % påslag per handel).
 
-- Pris under SMA200 ved døgnslutt → 0 %
-- Pris over SMA200 → 100 %
-- RSI(14) over 85 → selg ned til 50 % (gevinstsikring)
-- Kjøp tilbake til 100 % når RSI har falt til 70 eller lavere
+| Coin | Regel | Kort fortalt |
+|---|---|---|
+| BTC | SMA150 ±2 %, daglig | Inn over SMA150 + 2 %, ut under SMA150 − 2 % |
+| ETH | SMA-ensemble 50/100/150/200, 50 % kjerne, ukentlig | 50 % fast + 12,5 % per snitt prisen er over, sjekkes søndag |
+| SOL | SMA200 ±2 %, daglig | Inn over SMA200 + 2 %, ut under SMA200 − 2 % |
+
+Reglene ble valgt med `research/search.py` (320 varianter, walk-forward) og `research/classic.py`
+(klassiske regler i alle delperioder, bootstrap). Se nettsiden for forbehold.
 
 ## Oppsett (én gang)
 
