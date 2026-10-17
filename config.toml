@@ -29,7 +29,9 @@ strategy = { type = "ens_regime", set = "middels", regime = "BTC-USD", regime_se
 symbol = "SOL-USD"
 short = "SOL"
 name = "Solana"
-strategy = { type = "sma_band", n = 200, band = 0.02, check = "daily" }
+# Spesifikasjon: dokumentet "SOL-strategi: design og spesifikasjon" og research/sol_design.py
+# H2 valgt fremfor H1 fordi den hadde minst fall i de rettferdige testene (mål: unngå store fall)
+strategy = { type = "ens_regime", set = "lang", regime = "ETH-USD", regime_set = "lang", check = "weekly" }
 
 # -----------------------------------------------------------------------------
 # Kostnader og utførelse (Firi)

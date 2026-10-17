@@ -332,7 +332,8 @@ def _ens_regime_display(row, p):
 
 FAMILIES = {
     "ens_regime": dict(fn=ens_regime, rules=_ens_regime_rules, display=_ens_regime_display,
-                       label=lambda p: f"Trend × {_regime_short(p.get('regime', 'BTC-USD'))}-trend",
+                       label=lambda p: f"Trend × {_regime_short(p.get('regime', 'BTC-USD'))}-trend"
+                       + {"kort": " (korte snitt)", "lang": " (lange snitt)"}.get(p.get("set", "middels"), ""),
                        warmup=lambda p: max(max(SMA_SETS[p.get("set", "middels")]),
                                             max(SMA_SETS[p.get("regime_set") or p.get("set", "middels")]))),
     "sma_band": dict(fn=sma_band, rules=_sma_band_rules, display=_sma_band_display,

@@ -403,6 +403,7 @@ document.getElementById('method').innerHTML = `
     <li>Kravet var høyere årlig avkastning enn kjøp og hold <i>og</i> mindre maks fall – både før og etter ${R.holdout_start}.</li>
     <li>En regel ble bare godtatt hvis nabo-parameterne også gjorde det bra, og hvis den tålte høyere kostnader og forsinket handel.</li>
     <li>ETH-regelen ble utformet separat ut fra fire forhåndsdefinerte hypoteser (egen trend, BTC som markedsregime, relativ styrke ETH/BTC og volatilitet). BTC-trenden som markedsfilter var den eneste som ga klar forbedring. Se <code>research/eth_design.py</code>.</li>
+    <li>SOL-regelen ble valgt i en rettferdig sammenligning der også dagens regeltype måtte velge parametere uten å kjenne fremtiden (walk-forward, overføring fra BTC/ETH og deflatert Sharpe). ETH-trenden som filter ga minst fall. Ingen testet regel slo kjøp og hold for SOL etter april 2023. Se <code>research/sol_design.py</code> og <code>research/sol_extra.py</code>.</li>
   </ol>${wfText}`;
 
 // ---------- Fallgruver ----------
