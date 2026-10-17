@@ -1,0 +1,1795 @@
+{
+ "window": [
+  "2021-04-11",
+  "2026-10-16"
+ ],
+ "wf_first": "2023-04-11",
+ "buy_hold_full": {
+  "start": "2021-04-11",
+  "end": "2026-10-16",
+  "years": 5.52,
+  "final_multiple": 3.697451,
+  "total_return": 2.697451,
+  "cagr": 0.26748,
+  "vol": 1.026858,
+  "sharpe": 0.746294,
+  "sortino": 1.141667,
+  "max_dd": -0.962725,
+  "calmar": 0.277836,
+  "time_in_market": 0.999504,
+  "avg_exposure": 0.999504,
+  "trades": 1,
+  "trades_per_year": 0.181266,
+  "cost_drag": 0.01,
+  "worst_day": -0.422809
+ },
+ "buy_hold_wf": {
+  "start": "2023-04-11",
+  "end": "2026-10-16",
+  "years": 3.52,
+  "final_multiple": 4.486623,
+  "total_return": 3.486623,
+  "cagr": 0.532154,
+  "vol": 0.811287,
+  "sharpe": 0.926466,
+  "sortino": 1.567027,
+  "max_dd": -0.762516,
+  "calmar": 0.697892,
+  "time_in_market": 0.999222,
+  "avg_exposure": 0.999222,
+  "trades": 1,
+  "trades_per_year": 0.284241,
+  "cost_drag": 0.01,
+  "worst_day": -0.204344
+ },
+ "fixed_wf": {
+  "start": "2023-04-11",
+  "end": "2026-10-16",
+  "years": 3.52,
+  "final_multiple": 2.553804,
+  "total_return": 1.553804,
+  "cagr": 0.305388,
+  "vol": 0.644693,
+  "sharpe": 0.730026,
+  "sortino": 0.9739,
+  "max_dd": -0.680676,
+  "calmar": 0.448654,
+  "time_in_market": 0.550195,
+  "avg_exposure": 0.550195,
+  "trades": 27,
+  "trades_per_year": 7.674514,
+  "cost_drag": 0.27,
+  "worst_day": -0.146283
+ },
+ "fixed_full": {
+  "start": "2021-04-11",
+  "end": "2026-10-16",
+  "years": 5.52,
+  "final_multiple": 11.015171,
+  "total_return": 10.015171,
+  "cagr": 0.544817,
+  "vol": 0.763109,
+  "sharpe": 0.947263,
+  "sortino": 1.111622,
+  "max_dd": -0.680676,
+  "calmar": 0.800406,
+  "time_in_market": 0.492308,
+  "avg_exposure": 0.492308,
+  "trades": 31,
+  "trades_per_year": 5.619231,
+  "cost_drag": 0.31,
+  "worst_day": -0.372088
+ },
+ "wf": {
+  "INC": {
+   "metrics": {
+    "start": "2023-04-11",
+    "end": "2026-10-16",
+    "years": 3.52,
+    "final_multiple": 1.142882,
+    "total_return": 0.142882,
+    "cagr": 0.038691,
+    "vol": 0.64866,
+    "sharpe": 0.378183,
+    "sortino": 0.49351,
+    "max_dd": -0.828976,
+    "calmar": 0.046673,
+    "time_in_market": 0.553307,
+    "avg_exposure": 0.553307,
+    "trades": 33,
+    "trades_per_year": 9.379961,
+    "cost_drag": 0.33,
+    "worst_day": -0.163466
+   },
+   "picks": [
+    {
+     "start": "2023-04-11",
+     "label": "SMA200, daglig"
+    },
+    {
+     "start": "2023-10-10",
+     "label": "SMA200 ±3 %, daglig"
+    },
+    {
+     "start": "2024-04-09",
+     "label": "SMA200 ±3 %, daglig"
+    },
+    {
+     "start": "2024-10-08",
+     "label": "SMA300 ±5 %, daglig"
+    },
+    {
+     "start": "2025-04-08",
+     "label": "SMA300 ±5 %, daglig"
+    },
+    {
+     "start": "2025-10-07",
+     "label": "SMA200 ±8 %, daglig"
+    },
+    {
+     "start": "2026-04-07",
+     "label": "SMA200 ±8 %, daglig"
+    },
+    {
+     "start": "2026-10-06",
+     "label": "SMA200 ±2 %, daglig"
+    }
+   ]
+  },
+  "H1": {
+   "metrics": {
+    "start": "2023-04-11",
+    "end": "2026-10-16",
+    "years": 3.52,
+    "final_multiple": 1.611419,
+    "total_return": 0.611419,
+    "cagr": 0.145242,
+    "vol": 0.537074,
+    "sharpe": 0.515719,
+    "sortino": 0.691107,
+    "max_dd": -0.706948,
+    "calmar": 0.205449,
+    "time_in_market": 0.711284,
+    "avg_exposure": 0.454445,
+    "trades": 288,
+    "trades_per_year": 81.861479,
+    "cost_drag": 0.701988,
+    "worst_day": -0.15482
+   },
+   "picks": [
+    {
+     "start": "2023-04-11",
+     "label": "Trend × BTC-trend, kort, ukentlig"
+    },
+    {
+     "start": "2023-10-10",
+     "label": "Trend × BTC-trend, kort, daglig"
+    },
+    {
+     "start": "2024-04-09",
+     "label": "Trend × BTC-trend, lang, daglig"
+    },
+    {
+     "start": "2024-10-08",
+     "label": "Trend × BTC-trend, kort, daglig"
+    },
+    {
+     "start": "2025-04-08",
+     "label": "Trend × BTC-trend, kort, daglig"
+    },
+    {
+     "start": "2025-10-07",
+     "label": "Trend × BTC-trend, kort, daglig"
+    },
+    {
+     "start": "2026-04-07",
+     "label": "Trend × BTC-trend, kort, daglig"
+    },
+    {
+     "start": "2026-10-06",
+     "label": "Trend × BTC-trend, kort, daglig"
+    }
+   ]
+  },
+  "H2": {
+   "metrics": {
+    "start": "2023-04-11",
+    "end": "2026-10-16",
+    "years": 3.52,
+    "final_multiple": 1.581949,
+    "total_return": 0.581949,
+    "cagr": 0.139249,
+    "vol": 0.525153,
+    "sharpe": 0.505683,
+    "sortino": 0.624188,
+    "max_dd": -0.608156,
+    "calmar": 0.228969,
+    "time_in_market": 0.568872,
+    "avg_exposure": 0.415512,
+    "trades": 162,
+    "trades_per_year": 46.047082,
+    "cost_drag": 0.410276,
+    "worst_day": -0.149484
+   },
+   "picks": [
+    {
+     "start": "2023-04-11",
+     "label": "Trend × ETH-trend, lang, ukentlig"
+    },
+    {
+     "start": "2023-10-10",
+     "label": "Trend × ETH-trend, middels, daglig"
+    },
+    {
+     "start": "2024-04-09",
+     "label": "Trend × ETH-trend, middels, daglig"
+    },
+    {
+     "start": "2024-10-08",
+     "label": "Trend × ETH-trend, middels, daglig"
+    },
+    {
+     "start": "2025-04-08",
+     "label": "Trend × ETH-trend, middels, daglig"
+    },
+    {
+     "start": "2025-10-07",
+     "label": "Trend × ETH-trend, lang, daglig"
+    },
+    {
+     "start": "2026-04-07",
+     "label": "Trend × ETH-trend, lang, daglig"
+    },
+    {
+     "start": "2026-10-06",
+     "label": "Trend × ETH-trend, lang, daglig"
+    }
+   ]
+  },
+  "H3": {
+   "metrics": {
+    "start": "2023-04-11",
+    "end": "2026-10-16",
+    "years": 3.52,
+    "final_multiple": 1.806618,
+    "total_return": 0.806618,
+    "cagr": 0.183074,
+    "vol": 0.579804,
+    "sharpe": 0.573892,
+    "sortino": 0.808442,
+    "max_dd": -0.737059,
+    "calmar": 0.248385,
+    "time_in_market": 0.701946,
+    "avg_exposure": 0.527323,
+    "trades": 196,
+    "trades_per_year": 55.711284,
+    "cost_drag": 0.622883,
+    "worst_day": -0.150551
+   },
+   "picks": [
+    {
+     "start": "2023-04-11",
+     "label": "Trend × vol.mål 100 %, daglig"
+    },
+    {
+     "start": "2023-10-10",
+     "label": "Trend × vol.mål 100 %, daglig"
+    },
+    {
+     "start": "2024-04-09",
+     "label": "Trend × vol.mål 100 %, daglig"
+    },
+    {
+     "start": "2024-10-08",
+     "label": "Trend × vol.mål 100 %, daglig"
+    },
+    {
+     "start": "2025-04-08",
+     "label": "Trend × vol.mål 100 %, daglig"
+    },
+    {
+     "start": "2025-10-07",
+     "label": "Trend × vol.mål 100 %, daglig"
+    },
+    {
+     "start": "2026-04-07",
+     "label": "Trend × vol.mål 100 %, daglig"
+    },
+    {
+     "start": "2026-10-06",
+     "label": "Trend × vol.mål 100 %, daglig"
+    }
+   ]
+  },
+  "H4": {
+   "metrics": {
+    "start": "2023-04-11",
+    "end": "2026-10-16",
+    "years": 3.52,
+    "final_multiple": 1.887541,
+    "total_return": 0.887541,
+    "cagr": 0.197902,
+    "vol": 0.539919,
+    "sharpe": 0.598328,
+    "sortino": 0.658432,
+    "max_dd": -0.622481,
+    "calmar": 0.317924,
+    "time_in_market": 0.350973,
+    "avg_exposure": 0.350973,
+    "trades": 84,
+    "trades_per_year": 23.876265,
+    "cost_drag": 0.84,
+    "worst_day": -0.15482
+   },
+   "picks": [
+    {
+     "start": "2023-04-11",
+     "label": "Over SMA200 og SMA20"
+    },
+    {
+     "start": "2023-10-10",
+     "label": "Over SMA200 og SMA20"
+    },
+    {
+     "start": "2024-04-09",
+     "label": "Over SMA200 og SMA20"
+    },
+    {
+     "start": "2024-10-08",
+     "label": "Over SMA200 og SMA20"
+    },
+    {
+     "start": "2025-04-08",
+     "label": "Over SMA200 og SMA20"
+    },
+    {
+     "start": "2025-10-07",
+     "label": "Over SMA200 og SMA20"
+    },
+    {
+     "start": "2026-04-07",
+     "label": "Over SMA200 og SMA20"
+    },
+    {
+     "start": "2026-10-06",
+     "label": "Over SMA200 og SMA20"
+    }
+   ]
+  },
+  "NEW": {
+   "metrics": {
+    "start": "2023-04-11",
+    "end": "2026-10-16",
+    "years": 3.52,
+    "final_multiple": 1.611419,
+    "total_return": 0.611419,
+    "cagr": 0.145242,
+    "vol": 0.537074,
+    "sharpe": 0.515719,
+    "sortino": 0.691107,
+    "max_dd": -0.706948,
+    "calmar": 0.205449,
+    "time_in_market": 0.711284,
+    "avg_exposure": 0.454445,
+    "trades": 288,
+    "trades_per_year": 81.861479,
+    "cost_drag": 0.701988,
+    "worst_day": -0.15482
+   },
+   "picks": [
+    {
+     "start": "2023-04-11",
+     "label": "Trend × BTC-trend, kort, ukentlig"
+    },
+    {
+     "start": "2023-10-10",
+     "label": "Trend × BTC-trend, kort, daglig"
+    },
+    {
+     "start": "2024-04-09",
+     "label": "Trend × BTC-trend, lang, daglig"
+    },
+    {
+     "start": "2024-10-08",
+     "label": "Trend × BTC-trend, kort, daglig"
+    },
+    {
+     "start": "2025-04-08",
+     "label": "Trend × BTC-trend, kort, daglig"
+    },
+    {
+     "start": "2025-10-07",
+     "label": "Trend × BTC-trend, kort, daglig"
+    },
+    {
+     "start": "2026-04-07",
+     "label": "Trend × BTC-trend, kort, daglig"
+    },
+    {
+     "start": "2026-10-06",
+     "label": "Trend × BTC-trend, kort, daglig"
+    }
+   ]
+  }
+ },
+ "transfer": {
+  "INC": {
+   "label": "SMA125 ±2 %, daglig",
+   "variant": {
+    "fam": "INC",
+    "n": 125,
+    "band": 0.02,
+    "check": "daily"
+   },
+   "full": {
+    "start": "2021-04-11",
+    "end": "2026-10-16",
+    "years": 5.52,
+    "final_multiple": 3.21128,
+    "total_return": 2.21128,
+    "cagr": 0.235502,
+    "vol": 0.757898,
+    "sharpe": 0.654653,
+    "sortino": 0.775972,
+    "max_dd": -0.812579,
+    "calmar": 0.28982,
+    "time_in_market": 0.500744,
+    "avg_exposure": 0.500744,
+    "trades": 57,
+    "trades_per_year": 10.332134,
+    "cost_drag": 0.57,
+    "worst_day": -0.372088
+   },
+   "wf_window": {
+    "start": "2023-04-11",
+    "end": "2026-10-16",
+    "years": 3.52,
+    "final_multiple": 1.908912,
+    "total_return": 0.908912,
+    "cagr": 0.201741,
+    "vol": 0.624404,
+    "sharpe": 0.6004,
+    "sortino": 0.815018,
+    "max_dd": -0.753166,
+    "calmar": 0.267858,
+    "time_in_market": 0.531518,
+    "avg_exposure": 0.531518,
+    "trades": 39,
+    "trades_per_year": 11.085409,
+    "cost_drag": 0.39,
+    "worst_day": -0.146283
+   },
+   "cost2_cagr": 0.112468,
+   "lag2_cagr": 0.268975,
+   "train_score": 1.107914
+  },
+  "H1": {
+   "label": "Trend × BTC-trend, lang, ukentlig",
+   "variant": {
+    "fam": "H1",
+    "set": "lang",
+    "check": "weekly"
+   },
+   "full": {
+    "start": "2021-04-11",
+    "end": "2026-10-16",
+    "years": 5.52,
+    "final_multiple": 5.106532,
+    "total_return": 4.106532,
+    "cagr": 0.343875,
+    "vol": 0.627964,
+    "sharpe": 0.776824,
+    "sortino": 1.002525,
+    "max_dd": -0.748798,
+    "calmar": 0.459236,
+    "time_in_market": 0.589578,
+    "avg_exposure": 0.426035,
+    "trades": 88,
+    "trades_per_year": 15.951365,
+    "cost_drag": 0.318426,
+    "worst_day": -0.246983
+   },
+   "wf_window": {
+    "start": "2023-04-11",
+    "end": "2026-10-16",
+    "years": 3.52,
+    "final_multiple": 1.152122,
+    "total_return": 0.152122,
+    "cagr": 0.041071,
+    "vol": 0.587464,
+    "sharpe": 0.357309,
+    "sortino": 0.474067,
+    "max_dd": -0.748798,
+    "calmar": 0.054849,
+    "time_in_market": 0.661479,
+    "avg_exposure": 0.505439,
+    "trades": 61,
+    "trades_per_year": 17.338716,
+    "cost_drag": 0.242752,
+    "worst_day": -0.146283
+   },
+   "cost2_cagr": 0.267942,
+   "lag2_cagr": 0.290474,
+   "train_score": 1.023526
+  },
+  "H2": {
+   "label": "Trend × ETH-trend, lang, ukentlig",
+   "variant": {
+    "fam": "H2",
+    "set": "lang",
+    "check": "weekly"
+   },
+   "full": {
+    "start": "2021-04-11",
+    "end": "2026-10-16",
+    "years": 5.52,
+    "final_multiple": 6.273503,
+    "total_return": 5.273503,
+    "cagr": 0.394958,
+    "vol": 0.685354,
+    "sharpe": 0.825114,
+    "sortino": 0.942604,
+    "max_dd": -0.722237,
+    "calmar": 0.546854,
+    "time_in_market": 0.547891,
+    "avg_exposure": 0.412211,
+    "trades": 74,
+    "trades_per_year": 13.413648,
+    "cost_drag": 0.24051,
+    "worst_day": -0.372088
+   },
+   "wf_window": {
+    "start": "2023-04-11",
+    "end": "2026-10-16",
+    "years": 3.52,
+    "final_multiple": 1.748828,
+    "total_return": 0.748828,
+    "cagr": 0.172192,
+    "vol": 0.55685,
+    "sharpe": 0.558814,
+    "sortino": 0.683912,
+    "max_dd": -0.580974,
+    "calmar": 0.296385,
+    "time_in_market": 0.563424,
+    "avg_exposure": 0.434532,
+    "trades": 50,
+    "trades_per_year": 14.212062,
+    "cost_drag": 0.175669,
+    "worst_day": -0.146283
+   },
+   "cost2_cagr": 0.335034,
+   "lag2_cagr": 0.330838,
+   "train_score": 0.781296
+  },
+  "H3": {
+   "label": "Trend × vol.mål 60 %, ukentlig",
+   "variant": {
+    "fam": "H3",
+    "vt": 0.6,
+    "check": "weekly"
+   },
+   "full": {
+    "start": "2021-04-11",
+    "end": "2026-10-16",
+    "years": 5.52,
+    "final_multiple": 2.320792,
+    "total_return": 1.320792,
+    "cagr": 0.164869,
+    "vol": 0.485924,
+    "sharpe": 0.55469,
+    "sortino": 0.706121,
+    "max_dd": -0.726546,
+    "calmar": 0.226922,
+    "time_in_market": 0.672953,
+    "avg_exposure": 0.361607,
+    "trades": 120,
+    "trades_per_year": 21.751861,
+    "cost_drag": 0.341809,
+    "worst_day": -0.248128
+   },
+   "wf_window": {
+    "start": "2023-04-11",
+    "end": "2026-10-16",
+    "years": 3.52,
+    "final_multiple": 1.319135,
+    "total_return": 0.319135,
+    "cagr": 0.08191,
+    "vol": 0.465254,
+    "sharpe": 0.39808,
+    "sortino": 0.547978,
+    "max_dd": -0.595368,
+    "calmar": 0.137579,
+    "time_in_market": 0.699611,
+    "avg_exposure": 0.431216,
+    "trades": 84,
+    "trades_per_year": 23.876265,
+    "cost_drag": 0.280741,
+    "worst_day": -0.111
+   },
+   "cost2_cagr": 0.094439,
+   "lag2_cagr": 0.178479,
+   "train_score": 1.081696
+  },
+  "H4": {
+   "label": "Over SMA200 og SMA20",
+   "variant": {
+    "fam": "H4",
+    "long": 200,
+    "short": 20
+   },
+   "full": {
+    "start": "2021-04-11",
+    "end": "2026-10-16",
+    "years": 5.52,
+    "final_multiple": 3.669689,
+    "total_return": 2.669689,
+    "cagr": 0.26575,
+    "vol": 0.599612,
+    "sharpe": 0.690378,
+    "sortino": 0.661435,
+    "max_dd": -0.660337,
+    "calmar": 0.402445,
+    "time_in_market": 0.301737,
+    "avg_exposure": 0.301737,
+    "trades": 118,
+    "trades_per_year": 21.38933,
+    "cost_drag": 1.18,
+    "worst_day": -0.378367
+   },
+   "wf_window": {
+    "start": "2023-04-11",
+    "end": "2026-10-16",
+    "years": 3.52,
+    "final_multiple": 1.887541,
+    "total_return": 0.887541,
+    "cagr": 0.197902,
+    "vol": 0.539919,
+    "sharpe": 0.598328,
+    "sortino": 0.658432,
+    "max_dd": -0.622481,
+    "calmar": 0.317924,
+    "time_in_market": 0.350973,
+    "avg_exposure": 0.350973,
+    "trades": 84,
+    "trades_per_year": 23.876265,
+    "cost_drag": 0.84,
+    "worst_day": -0.15482
+   },
+   "cost2_cagr": 0.018685,
+   "lag2_cagr": 0.340629,
+   "train_score": 0.818641
+  }
+ },
+ "dsr": {
+  "INC": {
+   "sharpe_ann": 0.947498,
+   "sr0_ann": 0.507337,
+   "psr": 0.988098,
+   "dsr": 0.853145,
+   "skew": 0.793609,
+   "kurt": 15.57209,
+   "n_trials": 320,
+   "label": "SMA200 ±2 %, daglig (fast)"
+  },
+  "H1": {
+   "sharpe_ann": 1.011759,
+   "sr0_ann": 0.281743,
+   "psr": 0.99364,
+   "dsr": 0.96389,
+   "skew": 1.906514,
+   "kurt": 16.472268,
+   "n_trials": 24,
+   "label": "Trend × BTC-trend, middels, daglig"
+  },
+  "H2": {
+   "sharpe_ann": 0.832475,
+   "sr0_ann": 0.281743,
+   "psr": 0.976423,
+   "dsr": 0.905431,
+   "skew": 0.883049,
+   "kurt": 20.070677,
+   "n_trials": 24,
+   "label": "Trend × ETH-trend, lang, daglig"
+  },
+  "H3": {
+   "sharpe_ann": 0.821311,
+   "sr0_ann": 0.281743,
+   "psr": 0.97557,
+   "dsr": 0.902181,
+   "skew": 1.094764,
+   "kurt": 14.679042,
+   "n_trials": 24,
+   "label": "Trend × vol.mål 80 %, daglig"
+  },
+  "H4": {
+   "sharpe_ann": 0.868414,
+   "sr0_ann": 0.281743,
+   "psr": 0.980803,
+   "dsr": 0.919071,
+   "skew": 0.891512,
+   "kurt": 22.42124,
+   "n_trials": 24,
+   "label": "Over SMA200 og SMA50"
+  }
+ },
+ "decision": {
+  "H1": {
+   "criteria": {
+    "1_wf": true,
+    "2_transfer": true,
+    "3_dsr": true,
+    "4a_cagr": true,
+    "4b_dd": true,
+    "4c_cost2": true
+   },
+   "passes": true
+  },
+  "H2": {
+   "criteria": {
+    "1_wf": true,
+    "2_transfer": true,
+    "3_dsr": true,
+    "4a_cagr": true,
+    "4b_dd": true,
+    "4c_cost2": true
+   },
+   "passes": true
+  },
+  "H3": {
+   "criteria": {
+    "1_wf": true,
+    "2_transfer": false,
+    "3_dsr": true,
+    "4a_cagr": false,
+    "4b_dd": true,
+    "4c_cost2": false
+   },
+   "passes": false
+  },
+  "H4": {
+   "criteria": {
+    "1_wf": true,
+    "2_transfer": true,
+    "3_dsr": true,
+    "4a_cagr": false,
+    "4b_dd": true,
+    "4c_cost2": false
+   },
+   "passes": false
+  }
+ },
+ "variants": [
+  {
+   "label": "SMA50, daglig",
+   "fam": "INC",
+   "n": 50,
+   "band": 0.0,
+   "check": "daily",
+   "sol_sharpe": 0.839369
+  },
+  {
+   "label": "SMA50, ukentlig",
+   "fam": "INC",
+   "n": 50,
+   "band": 0.0,
+   "check": "weekly",
+   "sol_sharpe": 0.63206
+  },
+  {
+   "label": "SMA50 ±1 %, daglig",
+   "fam": "INC",
+   "n": 50,
+   "band": 0.01,
+   "check": "daily",
+   "sol_sharpe": 0.801658
+  },
+  {
+   "label": "SMA50 ±1 %, ukentlig",
+   "fam": "INC",
+   "n": 50,
+   "band": 0.01,
+   "check": "weekly",
+   "sol_sharpe": 0.609553
+  },
+  {
+   "label": "SMA50 ±2 %, daglig",
+   "fam": "INC",
+   "n": 50,
+   "band": 0.02,
+   "check": "daily",
+   "sol_sharpe": 0.758018
+  },
+  {
+   "label": "SMA50 ±2 %, ukentlig",
+   "fam": "INC",
+   "n": 50,
+   "band": 0.02,
+   "check": "weekly",
+   "sol_sharpe": 0.770297
+  },
+  {
+   "label": "SMA50 ±3 %, daglig",
+   "fam": "INC",
+   "n": 50,
+   "band": 0.03,
+   "check": "daily",
+   "sol_sharpe": 0.873936
+  },
+  {
+   "label": "SMA50 ±3 %, ukentlig",
+   "fam": "INC",
+   "n": 50,
+   "band": 0.03,
+   "check": "weekly",
+   "sol_sharpe": 0.836279
+  },
+  {
+   "label": "SMA50 ±5 %, daglig",
+   "fam": "INC",
+   "n": 50,
+   "band": 0.05,
+   "check": "daily",
+   "sol_sharpe": 0.951301
+  },
+  {
+   "label": "SMA50 ±5 %, ukentlig",
+   "fam": "INC",
+   "n": 50,
+   "band": 0.05,
+   "check": "weekly",
+   "sol_sharpe": 0.891099
+  },
+  {
+   "label": "SMA50 ±8 %, daglig",
+   "fam": "INC",
+   "n": 50,
+   "band": 0.08,
+   "check": "daily",
+   "sol_sharpe": 0.901378
+  },
+  {
+   "label": "SMA50 ±8 %, ukentlig",
+   "fam": "INC",
+   "n": 50,
+   "band": 0.08,
+   "check": "weekly",
+   "sol_sharpe": 0.81643
+  },
+  {
+   "label": "SMA75, daglig",
+   "fam": "INC",
+   "n": 75,
+   "band": 0.0,
+   "check": "daily",
+   "sol_sharpe": 0.471895
+  },
+  {
+   "label": "SMA75, ukentlig",
+   "fam": "INC",
+   "n": 75,
+   "band": 0.0,
+   "check": "weekly",
+   "sol_sharpe": 0.308126
+  },
+  {
+   "label": "SMA75 ±1 %, daglig",
+   "fam": "INC",
+   "n": 75,
+   "band": 0.01,
+   "check": "daily",
+   "sol_sharpe": 0.611795
+  },
+  {
+   "label": "SMA75 ±1 %, ukentlig",
+   "fam": "INC",
+   "n": 75,
+   "band": 0.01,
+   "check": "weekly",
+   "sol_sharpe": 0.334275
+  },
+  {
+   "label": "SMA75 ±2 %, daglig",
+   "fam": "INC",
+   "n": 75,
+   "band": 0.02,
+   "check": "daily",
+   "sol_sharpe": 0.705367
+  },
+  {
+   "label": "SMA75 ±2 %, ukentlig",
+   "fam": "INC",
+   "n": 75,
+   "band": 0.02,
+   "check": "weekly",
+   "sol_sharpe": 0.710944
+  },
+  {
+   "label": "SMA75 ±3 %, daglig",
+   "fam": "INC",
+   "n": 75,
+   "band": 0.03,
+   "check": "daily",
+   "sol_sharpe": 0.669778
+  },
+  {
+   "label": "SMA75 ±3 %, ukentlig",
+   "fam": "INC",
+   "n": 75,
+   "band": 0.03,
+   "check": "weekly",
+   "sol_sharpe": 0.662815
+  },
+  {
+   "label": "SMA75 ±5 %, daglig",
+   "fam": "INC",
+   "n": 75,
+   "band": 0.05,
+   "check": "daily",
+   "sol_sharpe": 0.502171
+  },
+  {
+   "label": "SMA75 ±5 %, ukentlig",
+   "fam": "INC",
+   "n": 75,
+   "band": 0.05,
+   "check": "weekly",
+   "sol_sharpe": 0.469551
+  },
+  {
+   "label": "SMA75 ±8 %, daglig",
+   "fam": "INC",
+   "n": 75,
+   "band": 0.08,
+   "check": "daily",
+   "sol_sharpe": 0.412648
+  },
+  {
+   "label": "SMA75 ±8 %, ukentlig",
+   "fam": "INC",
+   "n": 75,
+   "band": 0.08,
+   "check": "weekly",
+   "sol_sharpe": 0.485547
+  },
+  {
+   "label": "SMA100, daglig",
+   "fam": "INC",
+   "n": 100,
+   "band": 0.0,
+   "check": "daily",
+   "sol_sharpe": 0.366972
+  },
+  {
+   "label": "SMA100, ukentlig",
+   "fam": "INC",
+   "n": 100,
+   "band": 0.0,
+   "check": "weekly",
+   "sol_sharpe": 0.364212
+  },
+  {
+   "label": "SMA100 ±1 %, daglig",
+   "fam": "INC",
+   "n": 100,
+   "band": 0.01,
+   "check": "daily",
+   "sol_sharpe": 0.380584
+  },
+  {
+   "label": "SMA100 ±1 %, ukentlig",
+   "fam": "INC",
+   "n": 100,
+   "band": 0.01,
+   "check": "weekly",
+   "sol_sharpe": 0.451616
+  },
+  {
+   "label": "SMA100 ±2 %, daglig",
+   "fam": "INC",
+   "n": 100,
+   "band": 0.02,
+   "check": "daily",
+   "sol_sharpe": 0.371616
+  },
+  {
+   "label": "SMA100 ±2 %, ukentlig",
+   "fam": "INC",
+   "n": 100,
+   "band": 0.02,
+   "check": "weekly",
+   "sol_sharpe": 0.531702
+  },
+  {
+   "label": "SMA100 ±3 %, daglig",
+   "fam": "INC",
+   "n": 100,
+   "band": 0.03,
+   "check": "daily",
+   "sol_sharpe": 0.419286
+  },
+  {
+   "label": "SMA100 ±3 %, ukentlig",
+   "fam": "INC",
+   "n": 100,
+   "band": 0.03,
+   "check": "weekly",
+   "sol_sharpe": 0.702493
+  },
+  {
+   "label": "SMA100 ±5 %, daglig",
+   "fam": "INC",
+   "n": 100,
+   "band": 0.05,
+   "check": "daily",
+   "sol_sharpe": 0.646501
+  },
+  {
+   "label": "SMA100 ±5 %, ukentlig",
+   "fam": "INC",
+   "n": 100,
+   "band": 0.05,
+   "check": "weekly",
+   "sol_sharpe": 0.804098
+  },
+  {
+   "label": "SMA100 ±8 %, daglig",
+   "fam": "INC",
+   "n": 100,
+   "band": 0.08,
+   "check": "daily",
+   "sol_sharpe": 0.754681
+  },
+  {
+   "label": "SMA100 ±8 %, ukentlig",
+   "fam": "INC",
+   "n": 100,
+   "band": 0.08,
+   "check": "weekly",
+   "sol_sharpe": 0.557303
+  },
+  {
+   "label": "SMA125, daglig",
+   "fam": "INC",
+   "n": 125,
+   "band": 0.0,
+   "check": "daily",
+   "sol_sharpe": 0.705995
+  },
+  {
+   "label": "SMA125, ukentlig",
+   "fam": "INC",
+   "n": 125,
+   "band": 0.0,
+   "check": "weekly",
+   "sol_sharpe": 0.859119
+  },
+  {
+   "label": "SMA125 ±1 %, daglig",
+   "fam": "INC",
+   "n": 125,
+   "band": 0.01,
+   "check": "daily",
+   "sol_sharpe": 0.665621
+  },
+  {
+   "label": "SMA125 ±1 %, ukentlig",
+   "fam": "INC",
+   "n": 125,
+   "band": 0.01,
+   "check": "weekly",
+   "sol_sharpe": 0.982036
+  },
+  {
+   "label": "SMA125 ±2 %, daglig",
+   "fam": "INC",
+   "n": 125,
+   "band": 0.02,
+   "check": "daily",
+   "sol_sharpe": 0.654816
+  },
+  {
+   "label": "SMA125 ±2 %, ukentlig",
+   "fam": "INC",
+   "n": 125,
+   "band": 0.02,
+   "check": "weekly",
+   "sol_sharpe": 0.914594
+  },
+  {
+   "label": "SMA125 ±3 %, daglig",
+   "fam": "INC",
+   "n": 125,
+   "band": 0.03,
+   "check": "daily",
+   "sol_sharpe": 0.739438
+  },
+  {
+   "label": "SMA125 ±3 %, ukentlig",
+   "fam": "INC",
+   "n": 125,
+   "band": 0.03,
+   "check": "weekly",
+   "sol_sharpe": 0.914594
+  },
+  {
+   "label": "SMA125 ±5 %, daglig",
+   "fam": "INC",
+   "n": 125,
+   "band": 0.05,
+   "check": "daily",
+   "sol_sharpe": 0.831978
+  },
+  {
+   "label": "SMA125 ±5 %, ukentlig",
+   "fam": "INC",
+   "n": 125,
+   "band": 0.05,
+   "check": "weekly",
+   "sol_sharpe": 0.856208
+  },
+  {
+   "label": "SMA125 ±8 %, daglig",
+   "fam": "INC",
+   "n": 125,
+   "band": 0.08,
+   "check": "daily",
+   "sol_sharpe": 1.028923
+  },
+  {
+   "label": "SMA125 ±8 %, ukentlig",
+   "fam": "INC",
+   "n": 125,
+   "band": 0.08,
+   "check": "weekly",
+   "sol_sharpe": 0.722121
+  },
+  {
+   "label": "SMA150, daglig",
+   "fam": "INC",
+   "n": 150,
+   "band": 0.0,
+   "check": "daily",
+   "sol_sharpe": 0.75781
+  },
+  {
+   "label": "SMA150, ukentlig",
+   "fam": "INC",
+   "n": 150,
+   "band": 0.0,
+   "check": "weekly",
+   "sol_sharpe": 0.774551
+  },
+  {
+   "label": "SMA150 ±1 %, daglig",
+   "fam": "INC",
+   "n": 150,
+   "band": 0.01,
+   "check": "daily",
+   "sol_sharpe": 0.720162
+  },
+  {
+   "label": "SMA150 ±1 %, ukentlig",
+   "fam": "INC",
+   "n": 150,
+   "band": 0.01,
+   "check": "weekly",
+   "sol_sharpe": 0.776858
+  },
+  {
+   "label": "SMA150 ±2 %, daglig",
+   "fam": "INC",
+   "n": 150,
+   "band": 0.02,
+   "check": "daily",
+   "sol_sharpe": 0.856971
+  },
+  {
+   "label": "SMA150 ±2 %, ukentlig",
+   "fam": "INC",
+   "n": 150,
+   "band": 0.02,
+   "check": "weekly",
+   "sol_sharpe": 0.847062
+  },
+  {
+   "label": "SMA150 ±3 %, daglig",
+   "fam": "INC",
+   "n": 150,
+   "band": 0.03,
+   "check": "daily",
+   "sol_sharpe": 0.93855
+  },
+  {
+   "label": "SMA150 ±3 %, ukentlig",
+   "fam": "INC",
+   "n": 150,
+   "band": 0.03,
+   "check": "weekly",
+   "sol_sharpe": 0.962538
+  },
+  {
+   "label": "SMA150 ±5 %, daglig",
+   "fam": "INC",
+   "n": 150,
+   "band": 0.05,
+   "check": "daily",
+   "sol_sharpe": 0.930311
+  },
+  {
+   "label": "SMA150 ±5 %, ukentlig",
+   "fam": "INC",
+   "n": 150,
+   "band": 0.05,
+   "check": "weekly",
+   "sol_sharpe": 0.887458
+  },
+  {
+   "label": "SMA150 ±8 %, daglig",
+   "fam": "INC",
+   "n": 150,
+   "band": 0.08,
+   "check": "daily",
+   "sol_sharpe": 0.798942
+  },
+  {
+   "label": "SMA150 ±8 %, ukentlig",
+   "fam": "INC",
+   "n": 150,
+   "band": 0.08,
+   "check": "weekly",
+   "sol_sharpe": 0.802765
+  },
+  {
+   "label": "SMA175, daglig",
+   "fam": "INC",
+   "n": 175,
+   "band": 0.0,
+   "check": "daily",
+   "sol_sharpe": 0.708844
+  },
+  {
+   "label": "SMA175, ukentlig",
+   "fam": "INC",
+   "n": 175,
+   "band": 0.0,
+   "check": "weekly",
+   "sol_sharpe": 0.844679
+  },
+  {
+   "label": "SMA175 ±1 %, daglig",
+   "fam": "INC",
+   "n": 175,
+   "band": 0.01,
+   "check": "daily",
+   "sol_sharpe": 0.812031
+  },
+  {
+   "label": "SMA175 ±1 %, ukentlig",
+   "fam": "INC",
+   "n": 175,
+   "band": 0.01,
+   "check": "weekly",
+   "sol_sharpe": 0.866324
+  },
+  {
+   "label": "SMA175 ±2 %, daglig",
+   "fam": "INC",
+   "n": 175,
+   "band": 0.02,
+   "check": "daily",
+   "sol_sharpe": 0.783632
+  },
+  {
+   "label": "SMA175 ±2 %, ukentlig",
+   "fam": "INC",
+   "n": 175,
+   "band": 0.02,
+   "check": "weekly",
+   "sol_sharpe": 0.820533
+  },
+  {
+   "label": "SMA175 ±3 %, daglig",
+   "fam": "INC",
+   "n": 175,
+   "band": 0.03,
+   "check": "daily",
+   "sol_sharpe": 0.910125
+  },
+  {
+   "label": "SMA175 ±3 %, ukentlig",
+   "fam": "INC",
+   "n": 175,
+   "band": 0.03,
+   "check": "weekly",
+   "sol_sharpe": 0.76859
+  },
+  {
+   "label": "SMA175 ±5 %, daglig",
+   "fam": "INC",
+   "n": 175,
+   "band": 0.05,
+   "check": "daily",
+   "sol_sharpe": 0.88498
+  },
+  {
+   "label": "SMA175 ±5 %, ukentlig",
+   "fam": "INC",
+   "n": 175,
+   "band": 0.05,
+   "check": "weekly",
+   "sol_sharpe": 0.82944
+  },
+  {
+   "label": "SMA175 ±8 %, daglig",
+   "fam": "INC",
+   "n": 175,
+   "band": 0.08,
+   "check": "daily",
+   "sol_sharpe": 0.857876
+  },
+  {
+   "label": "SMA175 ±8 %, ukentlig",
+   "fam": "INC",
+   "n": 175,
+   "band": 0.08,
+   "check": "weekly",
+   "sol_sharpe": 0.853091
+  },
+  {
+   "label": "SMA200, daglig",
+   "fam": "INC",
+   "n": 200,
+   "band": 0.0,
+   "check": "daily",
+   "sol_sharpe": 0.949568
+  },
+  {
+   "label": "SMA200, ukentlig",
+   "fam": "INC",
+   "n": 200,
+   "band": 0.0,
+   "check": "weekly",
+   "sol_sharpe": 0.763131
+  },
+  {
+   "label": "SMA200 ±1 %, daglig",
+   "fam": "INC",
+   "n": 200,
+   "band": 0.01,
+   "check": "daily",
+   "sol_sharpe": 0.949199
+  },
+  {
+   "label": "SMA200 ±1 %, ukentlig",
+   "fam": "INC",
+   "n": 200,
+   "band": 0.01,
+   "check": "weekly",
+   "sol_sharpe": 0.796679
+  },
+  {
+   "label": "SMA200 ±2 %, daglig",
+   "fam": "INC",
+   "n": 200,
+   "band": 0.02,
+   "check": "daily",
+   "sol_sharpe": 0.947498
+  },
+  {
+   "label": "SMA200 ±2 %, ukentlig",
+   "fam": "INC",
+   "n": 200,
+   "band": 0.02,
+   "check": "weekly",
+   "sol_sharpe": 0.796679
+  },
+  {
+   "label": "SMA200 ±3 %, daglig",
+   "fam": "INC",
+   "n": 200,
+   "band": 0.03,
+   "check": "daily",
+   "sol_sharpe": 0.934269
+  },
+  {
+   "label": "SMA200 ±3 %, ukentlig",
+   "fam": "INC",
+   "n": 200,
+   "band": 0.03,
+   "check": "weekly",
+   "sol_sharpe": 0.806175
+  },
+  {
+   "label": "SMA200 ±5 %, daglig",
+   "fam": "INC",
+   "n": 200,
+   "band": 0.05,
+   "check": "daily",
+   "sol_sharpe": 0.982266
+  },
+  {
+   "label": "SMA200 ±5 %, ukentlig",
+   "fam": "INC",
+   "n": 200,
+   "band": 0.05,
+   "check": "weekly",
+   "sol_sharpe": 0.92774
+  },
+  {
+   "label": "SMA200 ±8 %, daglig",
+   "fam": "INC",
+   "n": 200,
+   "band": 0.08,
+   "check": "daily",
+   "sol_sharpe": 0.955968
+  },
+  {
+   "label": "SMA200 ±8 %, ukentlig",
+   "fam": "INC",
+   "n": 200,
+   "band": 0.08,
+   "check": "weekly",
+   "sol_sharpe": 0.852264
+  },
+  {
+   "label": "SMA250, daglig",
+   "fam": "INC",
+   "n": 250,
+   "band": 0.0,
+   "check": "daily",
+   "sol_sharpe": 0.878467
+  },
+  {
+   "label": "SMA250, ukentlig",
+   "fam": "INC",
+   "n": 250,
+   "band": 0.0,
+   "check": "weekly",
+   "sol_sharpe": 0.78144
+  },
+  {
+   "label": "SMA250 ±1 %, daglig",
+   "fam": "INC",
+   "n": 250,
+   "band": 0.01,
+   "check": "daily",
+   "sol_sharpe": 0.953596
+  },
+  {
+   "label": "SMA250 ±1 %, ukentlig",
+   "fam": "INC",
+   "n": 250,
+   "band": 0.01,
+   "check": "weekly",
+   "sol_sharpe": 0.846804
+  },
+  {
+   "label": "SMA250 ±2 %, daglig",
+   "fam": "INC",
+   "n": 250,
+   "band": 0.02,
+   "check": "daily",
+   "sol_sharpe": 0.924347
+  },
+  {
+   "label": "SMA250 ±2 %, ukentlig",
+   "fam": "INC",
+   "n": 250,
+   "band": 0.02,
+   "check": "weekly",
+   "sol_sharpe": 0.880345
+  },
+  {
+   "label": "SMA250 ±3 %, daglig",
+   "fam": "INC",
+   "n": 250,
+   "band": 0.03,
+   "check": "daily",
+   "sol_sharpe": 0.94953
+  },
+  {
+   "label": "SMA250 ±3 %, ukentlig",
+   "fam": "INC",
+   "n": 250,
+   "band": 0.03,
+   "check": "weekly",
+   "sol_sharpe": 0.965191
+  },
+  {
+   "label": "SMA250 ±5 %, daglig",
+   "fam": "INC",
+   "n": 250,
+   "band": 0.05,
+   "check": "daily",
+   "sol_sharpe": 0.916578
+  },
+  {
+   "label": "SMA250 ±5 %, ukentlig",
+   "fam": "INC",
+   "n": 250,
+   "band": 0.05,
+   "check": "weekly",
+   "sol_sharpe": 0.913532
+  },
+  {
+   "label": "SMA250 ±8 %, daglig",
+   "fam": "INC",
+   "n": 250,
+   "band": 0.08,
+   "check": "daily",
+   "sol_sharpe": 0.948985
+  },
+  {
+   "label": "SMA250 ±8 %, ukentlig",
+   "fam": "INC",
+   "n": 250,
+   "band": 0.08,
+   "check": "weekly",
+   "sol_sharpe": 0.889718
+  },
+  {
+   "label": "SMA300, daglig",
+   "fam": "INC",
+   "n": 300,
+   "band": 0.0,
+   "check": "daily",
+   "sol_sharpe": 0.777272
+  },
+  {
+   "label": "SMA300, ukentlig",
+   "fam": "INC",
+   "n": 300,
+   "band": 0.0,
+   "check": "weekly",
+   "sol_sharpe": 0.738472
+  },
+  {
+   "label": "SMA300 ±1 %, daglig",
+   "fam": "INC",
+   "n": 300,
+   "band": 0.01,
+   "check": "daily",
+   "sol_sharpe": 0.806665
+  },
+  {
+   "label": "SMA300 ±1 %, ukentlig",
+   "fam": "INC",
+   "n": 300,
+   "band": 0.01,
+   "check": "weekly",
+   "sol_sharpe": 0.743599
+  },
+  {
+   "label": "SMA300 ±2 %, daglig",
+   "fam": "INC",
+   "n": 300,
+   "band": 0.02,
+   "check": "daily",
+   "sol_sharpe": 0.867356
+  },
+  {
+   "label": "SMA300 ±2 %, ukentlig",
+   "fam": "INC",
+   "n": 300,
+   "band": 0.02,
+   "check": "weekly",
+   "sol_sharpe": 0.750753
+  },
+  {
+   "label": "SMA300 ±3 %, daglig",
+   "fam": "INC",
+   "n": 300,
+   "band": 0.03,
+   "check": "daily",
+   "sol_sharpe": 0.909836
+  },
+  {
+   "label": "SMA300 ±3 %, ukentlig",
+   "fam": "INC",
+   "n": 300,
+   "band": 0.03,
+   "check": "weekly",
+   "sol_sharpe": 0.865594
+  },
+  {
+   "label": "SMA300 ±5 %, daglig",
+   "fam": "INC",
+   "n": 300,
+   "band": 0.05,
+   "check": "daily",
+   "sol_sharpe": 0.779827
+  },
+  {
+   "label": "SMA300 ±5 %, ukentlig",
+   "fam": "INC",
+   "n": 300,
+   "band": 0.05,
+   "check": "weekly",
+   "sol_sharpe": 0.769243
+  },
+  {
+   "label": "SMA300 ±8 %, daglig",
+   "fam": "INC",
+   "n": 300,
+   "band": 0.08,
+   "check": "daily",
+   "sol_sharpe": 0.815941
+  },
+  {
+   "label": "SMA300 ±8 %, ukentlig",
+   "fam": "INC",
+   "n": 300,
+   "band": 0.08,
+   "check": "weekly",
+   "sol_sharpe": 0.808978
+  },
+  {
+   "label": "Trend × BTC-trend, kort, daglig",
+   "fam": "H1",
+   "set": "kort",
+   "check": "daily",
+   "sol_sharpe": 0.930233
+  },
+  {
+   "label": "Trend × BTC-trend, kort, ukentlig",
+   "fam": "H1",
+   "set": "kort",
+   "check": "weekly",
+   "sol_sharpe": 0.675212
+  },
+  {
+   "label": "Trend × BTC-trend, middels, daglig",
+   "fam": "H1",
+   "set": "middels",
+   "check": "daily",
+   "sol_sharpe": 1.011759
+  },
+  {
+   "label": "Trend × BTC-trend, middels, ukentlig",
+   "fam": "H1",
+   "set": "middels",
+   "check": "weekly",
+   "sol_sharpe": 0.784213
+  },
+  {
+   "label": "Trend × BTC-trend, lang, daglig",
+   "fam": "H1",
+   "set": "lang",
+   "check": "daily",
+   "sol_sharpe": 0.866954
+  },
+  {
+   "label": "Trend × BTC-trend, lang, ukentlig",
+   "fam": "H1",
+   "set": "lang",
+   "check": "weekly",
+   "sol_sharpe": 0.777016
+  },
+  {
+   "label": "Trend × ETH-trend, kort, daglig",
+   "fam": "H2",
+   "set": "kort",
+   "check": "daily",
+   "sol_sharpe": 0.798622
+  },
+  {
+   "label": "Trend × ETH-trend, kort, ukentlig",
+   "fam": "H2",
+   "set": "kort",
+   "check": "weekly",
+   "sol_sharpe": 0.706189
+  },
+  {
+   "label": "Trend × ETH-trend, middels, daglig",
+   "fam": "H2",
+   "set": "middels",
+   "check": "daily",
+   "sol_sharpe": 0.813777
+  },
+  {
+   "label": "Trend × ETH-trend, middels, ukentlig",
+   "fam": "H2",
+   "set": "middels",
+   "check": "weekly",
+   "sol_sharpe": 0.757485
+  },
+  {
+   "label": "Trend × ETH-trend, lang, daglig",
+   "fam": "H2",
+   "set": "lang",
+   "check": "daily",
+   "sol_sharpe": 0.832475
+  },
+  {
+   "label": "Trend × ETH-trend, lang, ukentlig",
+   "fam": "H2",
+   "set": "lang",
+   "check": "weekly",
+   "sol_sharpe": 0.825319
+  },
+  {
+   "label": "Trend × vol.mål 60 %, daglig",
+   "fam": "H3",
+   "vt": 0.6,
+   "check": "daily",
+   "sol_sharpe": 0.733266
+  },
+  {
+   "label": "Trend × vol.mål 60 %, ukentlig",
+   "fam": "H3",
+   "vt": 0.6,
+   "check": "weekly",
+   "sol_sharpe": 0.554828
+  },
+  {
+   "label": "Trend × vol.mål 80 %, daglig",
+   "fam": "H3",
+   "vt": 0.8,
+   "check": "daily",
+   "sol_sharpe": 0.821311
+  },
+  {
+   "label": "Trend × vol.mål 80 %, ukentlig",
+   "fam": "H3",
+   "vt": 0.8,
+   "check": "weekly",
+   "sol_sharpe": 0.622441
+  },
+  {
+   "label": "Trend × vol.mål 100 %, daglig",
+   "fam": "H3",
+   "vt": 1.0,
+   "check": "daily",
+   "sol_sharpe": 0.800029
+  },
+  {
+   "label": "Trend × vol.mål 100 %, ukentlig",
+   "fam": "H3",
+   "vt": 1.0,
+   "check": "weekly",
+   "sol_sharpe": 0.588141
+  },
+  {
+   "label": "Over SMA100 og SMA20",
+   "fam": "H4",
+   "long": 100,
+   "short": 20,
+   "sol_sharpe": 0.437549
+  },
+  {
+   "label": "Over SMA100 og SMA50",
+   "fam": "H4",
+   "long": 100,
+   "short": 50,
+   "sol_sharpe": 0.546969
+  },
+  {
+   "label": "Over SMA150 og SMA20",
+   "fam": "H4",
+   "long": 150,
+   "short": 20,
+   "sol_sharpe": 0.462183
+  },
+  {
+   "label": "Over SMA150 og SMA50",
+   "fam": "H4",
+   "long": 150,
+   "short": 50,
+   "sol_sharpe": 0.718727
+  },
+  {
+   "label": "Over SMA200 og SMA20",
+   "fam": "H4",
+   "long": 200,
+   "short": 20,
+   "sol_sharpe": 0.690549
+  },
+  {
+   "label": "Over SMA200 og SMA50",
+   "fam": "H4",
+   "long": 200,
+   "short": 50,
+   "sol_sharpe": 0.868414
+  }
+ ]
+}
