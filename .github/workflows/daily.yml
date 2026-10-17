@@ -59,6 +59,7 @@ jobs:
           set -e
           echo "Modus: $MODE"
           have_data() { ls data/*.csv >/dev/null 2>&1; }
+          python -c "from ksig.data import update_fng; print('FNG rader:', update_fng())" || echo "Fear & Greed feilet"
           case "$MODE" in
             daily)
               python -m ksig daily ;;

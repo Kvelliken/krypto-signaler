@@ -179,7 +179,34 @@ def update_symbol(symbol: str, data_start: str, full: bool = False) -> UpdateRep
     return report
 
 
+def update_fng() -> int:
+    """Crypto Fear & Greed Index (alternative.me), daglig fra feb. 2018.
+
+    Verdien med tidsstempel D publiseres ved starten av døgn D, så den er kjent
+    ved døgnslutt D og kan brukes i signalet uten fremtidsdata.
+    """
+    resp = requests.get("https://api.alternative.me/fng/", params={"limit": 0, "format": "json"},
+                        headers={"User-Agent": "krypto-signaler"}, timeout=30)
+    resp.raise_for_status()
+    rows = resp.json()["data"]
+    df = pd.DataFrame({"Date": pd.to_datetime([int(r["timestamp"]) for r in rows], unit="s").normalize(),
+                       "FNG": [int(r["value"]) for r in rows]})
+    df = df.drop_duplicates("Date", keep="last").sort_values("Date")
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    df.to_csv(DATA_DIR / "FNG.csv", index=False)
+    return len(df)
+
+
+def load_fng() -> pd.Series:
+    df = pd.read_csv(DATA_DIR / "FNG.csv", parse_dates=["Date"])
+    return df.set_index("Date")["FNG"].astype(float)
+
+
 def update_all(cfg: dict, full: bool = False) -> list[UpdateReport]:
+    try:
+        log.info("Fear & Greed: %s rader", update_fng())
+    except Exception as exc:  # noqa: BLE001 – valgfri tilleggsdata
+        log.warning("Fear & Greed feilet: %s", exc)
     reports = []
     for asset in cfg["assets"]:
         rep = update_symbol(asset["symbol"], cfg.get("data_start", "2014-01-01"), full=full)
