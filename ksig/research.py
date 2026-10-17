@@ -173,34 +173,30 @@ def analyze_asset(asset: dict, cfg: dict) -> dict:
 
 
 def portfolio(assets: list[dict], cfg: dict) -> dict:
-    """Lik vekt (1/3) per coin fra felles startdato, uten rebalansering mellom coins."""
+    """Hele porteføljen med valgt fordeling, mot lik vekt og kjøp og hold (lik vekt, alltid inne).
+
+    Simuleres samlet: andeler av totalen, handel bare ved endring ≥ bånd, drift mellom handler.
+    """
+    from . import portfolio as PF
     costs = Costs.from_cfg(cfg["costs"])
+    method, params, band = PF.from_cfg(cfg)
     start = max(a["_frames"]["eval_start"] for a in assets)
-    sleeves = {"strategy": [], BH: []}
-    for a in assets:
-        f = a["_frames"]
-        c = f["close"][f["close"].index >= start]
-        sleeves["strategy"].append(simulate(c, f["target"][c.index], costs))
-        sleeves[BH].append(simulate(c, pd.Series(1.0, index=c.index), costs))
-    combined = {}
-    for key, parts in sleeves.items():
-        idx = parts[0].index
-        for p in parts[1:]:
-            idx = idx.intersection(p.index)
-        eq = sum(p["equity"].reindex(idx) for p in parts) / len(parts)
-        ret = eq.pct_change()
-        ret.iloc[0] = eq.iloc[0] - 1
-        combined[key] = pd.DataFrame({
-            "equity": eq, "ret": ret,
-            "cost": sum(p["cost"].reindex(idx) for p in parts) / len(parts),
-            "traded": sum(p["traded"].reindex(idx) for p in parts),
-            "exposure": sum(p["exposure"].reindex(idx) for p in parts) / len(parts)})
+    C, T = PF.coin_frames(cfg)
+    ones = pd.DataFrame(1.0, index=C.index, columns=C.columns)
+    combined = {
+        "strategy": PF.simulate_portfolio(C, PF.allocate(T, C, method, params), costs, band, start),
+        "equal": PF.simulate_portfolio(C, PF.allocate(T, C, "equal", {"round_to": params.get("round_to", 0.025)}),
+                                       costs, band, start),
+        BH: PF.simulate_portfolio(C, PF.allocate(ones, C, "equal", {"round_to": 0.0001}), costs, band, start),
+    }
     yr_s, yr_b = yearly_returns(combined["strategy"]), yearly_returns(combined[BH])
     return {
         "start": str(start.date()),
+        "method": method, "params": params, "band": band, "rules": PF.describe(cfg),
         "metrics": {k: metrics(v) for k, v in combined.items()},
         "equity": _downsample(combined),
         "drawdown": {k: _drawdown(v) for k, v in combined.items()},
+        "avg_cash": float(1 - combined["strategy"]["exposure"].mean()),
         "yearly": [{"year": int(y), "strategy": float(yr_s[y]), "buy_hold": float(yr_b[y]),
                     "partial": bool(y == yr_s.index[0] or y == yr_s.index[-1])} for y in yr_s.index],
     }

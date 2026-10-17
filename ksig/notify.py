@@ -25,61 +25,66 @@ def _pct(x):
 
 
 def build_message(sig: dict, pages_url: str, reason: str = "change") -> tuple[str, str, str]:
-    changed = [r for r in sig["assets"] if r["changed"]]
-    date = max(r["date"] for r in sig["assets"])
+    assets = sig["assets"]
+    changed = [r for r in assets if r["changed"]]
+    date = max(r["date"] for r in assets)
+    cash = sig["portfolio"]["cash"]
     if reason == "test":
         subject = f"Krypto-signaler: testvarsel ({date})"
     elif reason == "stale":
         subject = f"Krypto-signaler: data er ikke oppdatert ({date})"
-    elif sig["first_run"]:
-        subject = f"Krypto-signaler startet – gjeldende posisjoner ({date})"
+    elif sig.get("first_portfolio"):
+        subject = f"Krypto-signaler: ny fordeling av porteføljen ({date})"
     else:
-        parts = [f"{r['short']}: {_pct(r['notified_target'])} → {_pct(r['target'])}" for r in changed]
+        parts = [f"{r['short']} {_pct(r['notified_share'])} → {_pct(r['share'])}" for r in changed]
         subject = f"Krypto-signal {date}: " + ", ".join(parts)
 
     lines = []
     if reason == "stale":
         lines += ["Dataene er ikke oppdatert som forventet. Signalene under kan være utdaterte.", ""]
+    if sig.get("first_portfolio"):
+        lines += ["Signalene gjelder nå andeler av HELE porteføljen (ikke en egen pott per coin).", ""]
     if sig.get("params_changed"):
         lines += ["Strategien er endret for minst én coin (se under).", ""]
-    lines += [f"Signaler basert på døgnslutt {date} (00:00 UTC).", ""]
-    for r in sig["assets"]:
+    lines += [f"Fordeling basert på døgnslutt {date} (00:00 UTC):", ""]
+    for r in assets:
         flag = "→ " if r["changed"] else "  "
-        lines.append(f"{flag}{r['short']}: mål {_pct(r['target'])}  |  {r['action']}")
-        lines.append(f"    Pris {r['close']:,.2f} USD · regel: {r['label']}")
+        lines.append(f"{flag}{r['short']}: {_pct(r['hold_share'])} av porteføljen  |  {r['action']}")
+        lines.append(f"    Pris {r['close']:,.2f} USD · regel {r['label']}: {_pct(r['target'])} av vekten "
+                     f"{_pct(r['weight'])} (nr. {r['mom_rank']} på momentum)")
         for n in r["notes"]:
             lines.append(f"    • {n}")
         lines.append("")
-    lines += [
-        "Målprosenten gjelder andelen av den delen av porteføljen du har satt av til hver coin.",
-        "Dette er regelbaserte signaler, ikke finansiell rådgivning.",
-        "",
-        f"Full oversikt: {pages_url}",
-    ]
+    lines += [f"  Kontanter: {_pct(cash)}", "",
+              "Handle bare de coinene som er markert med →. Små avvik fra prisbevegelser er normalt.",
+              "Dette er regelbaserte signaler, ikke finansiell rådgivning.", "",
+              f"Full oversikt og beløp i kroner: {pages_url}"]
     text = "\n".join(lines)
 
     rows_html = "".join(
         f"<tr style='background:{'#fff6e0' if r['changed'] else 'transparent'}'>"
         f"<td style='padding:6px 10px'><b>{html.escape(r['short'])}</b></td>"
-        f"<td style='padding:6px 10px'>{_pct(r['target'])}</td>"
+        f"<td style='padding:6px 10px;text-align:right'><b>{_pct(r['hold_share'])}</b></td>"
         f"<td style='padding:6px 10px'>{html.escape(r['action'])}</td>"
         f"<td style='padding:6px 10px;color:#52514e'>{html.escape(r['label'])}</td></tr>"
-        for r in sig["assets"])
+        for r in assets)
+    rows_html += (f"<tr><td style='padding:6px 10px'>Kontanter</td>"
+                  f"<td style='padding:6px 10px;text-align:right'>{_pct(cash)}</td><td></td><td></td></tr>")
     notes_html = "".join(
-        f"<li>{html.escape(r['short'])}: {html.escape(n)}</li>" for r in sig["assets"] for n in r["notes"])
+        f"<li>{html.escape(r['short'])}: {html.escape(n)}</li>" for r in assets for n in r["notes"])
     html_body = f"""<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#0b0b0b">
-<p>Signaler basert på døgnslutt <b>{date}</b> (00:00 UTC).</p>
-{'<p><b>Strategien er endret for minst én coin.</b></p>' if sig.get('params_changed') else ''}
+<p>Fordeling av hele porteføljen basert på døgnslutt <b>{date}</b> (00:00 UTC).</p>
+{'<p><b>Nytt:</b> signalene gjelder nå andeler av hele porteføljen.</p>' if sig.get('first_portfolio') else ''}
 {'<p><b>Advarsel:</b> dataene er ikke oppdatert som forventet.</p>' if reason == 'stale' else ''}
 <table style="border-collapse:collapse;border:1px solid #e1e0d9">
 <tr style="background:#f0efec"><th style="padding:6px 10px;text-align:left">Coin</th>
-<th style="padding:6px 10px;text-align:left">Mål</th><th style="padding:6px 10px;text-align:left">Handling</th>
+<th style="padding:6px 10px;text-align:right">Andel</th><th style="padding:6px 10px;text-align:left">Handling</th>
 <th style="padding:6px 10px;text-align:left">Regel</th></tr>
 {rows_html}</table>
 {'<ul>' + notes_html + '</ul>' if notes_html else ''}
-<p style="color:#52514e;font-size:13px">Målprosenten gjelder andelen av den delen av porteføljen du har satt av til hver coin.
+<p style="color:#52514e;font-size:13px">Handle bare de coinene som er markert. Små avvik fra prisbevegelser er normalt.
 Regelbaserte signaler, ikke finansiell rådgivning.</p>
-<p><a href="{html.escape(pages_url)}">Åpne full oversikt</a></p></div>"""
+<p><a href="{html.escape(pages_url)}">Åpne full oversikt med beløp i kroner</a></p></div>"""
     return subject, text, html_body
 
 

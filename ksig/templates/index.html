@@ -111,6 +111,18 @@ a { color: var(--s1); }
 .ok { color: var(--good); font-weight: 600; } .nok { color: var(--muted); }
 .method p, .method li { font-size: 14px; color: var(--ink-2); }
 .method ol { padding-left: 20px; margin: 6px 0 10px; }
+.alloc { margin-top: 14px; }
+.alloc h2 { margin: 0 0 4px; }
+.allocbar { display: flex; height: 34px; border-radius: 8px; overflow: hidden; margin: 14px 0 6px; gap: 2px; background: var(--surface); }
+.allocbar > div { display: flex; align-items: center; justify-content: center; min-width: 0; font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; }
+.allocbar > div.cash { background: var(--surface-2); color: var(--ink-2); border: 1px dashed var(--axis); }
+.alloc-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--ink-2); margin-bottom: 10px; }
+.alloc-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.alloc table td.big { font-size: 18px; font-weight: 700; }
+.alloc-input { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 12px 0 4px; font-size: 14px; color: var(--ink-2); }
+.alloc-input input { font: inherit; font-size: 15px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--axis);
+  background: var(--surface); color: var(--ink); width: 180px; font-variant-numeric: tabular-nums; }
+.share-line { color: var(--ink-2); font-size: 13.5px; margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -121,9 +133,11 @@ a { color: var(--s1); }
   </header>
 
   <div id="banner"></div>
+  <section class="card alloc" id="alloc"></section>
+  <h2>Per coin</h2>
   <section class="coins" id="coins"></section>
-  <p class="sub" style="margin-top:12px">Målprosenten gjelder den delen av porteføljen du har satt av til hver coin.
-    Signalene beregnes ved døgnslutt 00:00 UTC, og siden oppdateres automatisk hver natt.</p>
+  <p class="sub" style="margin-top:12px">Andelene gjelder hele porteføljen. Signalene beregnes ved døgnslutt 00:00 UTC,
+    og siden oppdateres automatisk hver natt.</p>
 
   <h2>Backtest: hele porteføljen</h2>
   <p class="sub" id="pf-sub"></p>
@@ -180,31 +194,76 @@ document.getElementById('subtitle').textContent =
   `Signaler for døgnslutt ${dataDate} (00:00 UTC) · siden bygget ${S.generated}`;
 document.getElementById('foot-gen').textContent = `Backtest beregnet ${R.generated}`;
 
-const changedNow = S.assets.filter(a => a.prev_day_target != null && Math.abs(a.prev_day_target - a.target) > 1e-9);
+const loggedToday = D.log.filter(r => r.data_date === dataDate);
+const pending = S.assets.filter(a => a.changed);
+const changedShorts = new Set([...loggedToday.map(r => r.coin), ...(S.first_portfolio ? [] : pending.map(a => a.short))]);
 const banner = document.getElementById('banner');
 if (S.max_stale_days >= 2) {
   banner.innerHTML = `<div class="banner warn"><b>Advarsel:</b> dataene er ikke oppdatert (eldste coin er ${S.max_stale_days} døgn bak). Signalene kan være utdaterte.</div>`;
-} else if (changedNow.length) {
+} else if (S.first_portfolio) {
+  banner.innerHTML = `<div class="banner change"><b>Ny fordeling:</b> signalene gjelder nå andeler av hele porteføljen. Juster til fordelingen under.</div>`;
+} else if (pending.length) {
+  banner.innerHTML = `<div class="banner change"><b>Endring:</b> ` +
+    pending.map(a => `${esc(a.short)} ${tpct(a.notified_share)} → ${tpct(a.share)}`).join(' · ') + ` av porteføljen</div>`;
+} else if (loggedToday.length) {
   banner.innerHTML = `<div class="banner change"><b>Endring ved siste døgnslutt:</b> ` +
-    changedNow.map(a => `${esc(a.short)} ${tpct(a.prev_day_target)} → ${tpct(a.target)}`).join(' · ') + `</div>`;
+    loggedToday.map(r => `${esc(r.coin)} ${r.fra === '' ? '–' : tpct(+r.fra)} → ${tpct(+r.til)}`).join(' · ') + ` av porteføljen</div>`;
 } else {
-  banner.innerHTML = `<div class="banner"><b>Ingen endring.</b> Behold posisjonene som de er.</div>`;
+  banner.innerHTML = `<div class="banner"><b>Ingen endring.</b> Behold fordelingen som den er.</div>`;
 }
+
+// ---------- Fordeling nå ----------
+const COIN_COLOR = { BTC: '--s2', ETH: '--s1', SOL: '--s3' };
+const cash = S.portfolio.cash;
+const segs = S.assets.map(a => ({ key: a.short, name: a.name, v: a.hold_share, color: css(COIN_COLOR[a.short] || '--muted') }))
+  .concat([{ key: 'cash', name: 'Kontanter', v: cash }]);
+let pfValue = null;
+try { pfValue = parseFloat(localStorage.getItem('ksig-pf-value')) || null; } catch (e) {}
+const kr = x => x == null ? '–' : nf(x, 0) + ' kr';
+function renderAlloc() {
+  const box = document.getElementById('alloc');
+  const lab = s => s.v >= 0.2 ? (s.key === 'cash' ? 'Kontanter ' : esc(s.key) + ' ') + tpct(s.v) : s.v >= 0.08 ? tpct(s.v) : '';
+  const bar = segs.filter(s => s.v > 0.0001).map(s => s.key === 'cash'
+      ? `<div class="cash" style="flex:${s.v}" title="Kontanter ${tpct(s.v)}">${lab(s)}</div>`
+      : `<div style="flex:${s.v};background:${s.color}" title="${esc(s.name)} ${tpct(s.v)}">${lab(s)}</div>`).join('');
+  const rows = S.assets.map(a => {
+    const chg = changedShorts.has(a.short);
+    return `<tr class="${chg ? 'hl' : ''}"><td>${esc(a.name)} <span class="muted">${esc(a.short)}</span>${chg ? ' <span class="tag chg">Endret</span>' : ''}</td>
+      <td class="big">${tpct(a.hold_share)}</td><td>${pfValue ? kr(a.hold_share * pfValue) : '–'}</td></tr>`; }).join('') +
+    `<tr><td>Kontanter</td><td class="big">${tpct(cash)}</td><td>${pfValue ? kr(cash * pfValue) : '–'}</td></tr>`;
+  box.innerHTML = `
+    <h2>Slik bør porteføljen være fordelt nå</h2>
+    <p class="sub">Andel av hele porteføljen. Handle bare når en andel endres (du får e-post); små avvik fra prisbevegelser er normalt.</p>
+    <div class="allocbar" role="img" aria-label="${segs.map(s => s.name + ' ' + tpct(s.v)).join(', ')}">${bar}</div>
+    <div class="alloc-legend">${segs.map(s => `<span><i style="background:${s.key === 'cash' ? css('--surface-2') : s.color};${s.key === 'cash' ? 'border:1px dashed ' + css('--axis') : ''}"></i>${esc(s.name)}</span>`).join('')}</div>
+    <div class="alloc-input"><label for="pf-value">Porteføljens verdi i dag</label>
+      <input id="pf-value" type="number" inputmode="numeric" min="0" step="1000" placeholder="f.eks. 100000" value="${pfValue ?? ''}"> kr
+      <span class="muted">Lagres bare i denne nettleseren.</span></div>
+    <div class="table-wrap"><table><thead><tr><th>Coin</th><th>Andel</th><th>Beløp</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <details><summary>Slik fordeles porteføljen</summary><ul class="rule-list">${S.portfolio.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ul></details>`;
+  const inp = document.getElementById('pf-value');
+  inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value);
+    pfValue = isFinite(v) && v > 0 ? v : null;
+    try { pfValue ? localStorage.setItem('ksig-pf-value', String(pfValue)) : localStorage.removeItem('ksig-pf-value'); } catch (e) {}
+    renderAlloc();
+  });
+}
+renderAlloc();
 
 // ---------- Coin-kort ----------
 const coins = document.getElementById('coins');
 S.assets.forEach((a, i) => {
-  const changed = a.prev_day_target != null && Math.abs(a.prev_day_target - a.target) > 1e-9;
-  const action = !changed ? 'Behold'
-    : a.target === 0 ? 'Selg alt' : a.prev_day_target === 0 ? `Kjøp til ${tpct(a.target)}`
-    : a.target < a.prev_day_target ? `Selg ned til ${tpct(a.target)}` : `Kjøp opp til ${tpct(a.target)}`;
+  const changed = changedShorts.has(a.short);
+  const action = changed ? 'Endret' : 'Behold';
   const card = el('article', { className: 'card coin' + (changed ? ' changed' : '') });
   card.innerHTML = `
     <div class="coin-head"><span class="coin-name">${esc(a.name)} <span class="muted">${esc(a.short)}</span></span>
-      <span class="tag ${changed ? 'chg' : ''}">${changed ? 'Endret: ' + action : action}</span></div>
-    <div class="target">${tpct(a.target)}</div>
-    <div class="state">${stateLabel(a.target)}${a.last_change ? ' · siden ' + a.last_change : ''}</div>
-    <div class="meter" aria-hidden="true"><div style="width:${a.target * 100}%"></div></div>
+      <span class="tag ${changed ? 'chg' : ''}">${action}</span></div>
+    <div class="target">${tpct(a.hold_share)} <span class="muted" style="font-size:15px;font-weight:500">av porteføljen</span></div>
+    <div class="share-line">Regelen: ${tpct(a.target)} av vekten ${tpct(a.weight)} · momentum nr. ${a.mom_rank ?? '–'} (${pct(a.mom_ret, 0, true)} siste ${S.portfolio.params.mom_window || 90} d)</div>
+    <div class="state">${stateLabel(a.target)}${a.last_change ? ' · andel endret ' + a.last_change : ''}</div>
+    <div class="meter" aria-hidden="true"><div style="width:${a.hold_share * 100}%;background:${css(COIN_COLOR[a.short] || '--s1')}"></div></div>
     <dl class="kv">
       <dt>Sluttkurs</dt><dd>${money(a.close)}</dd>
       ${a.display.map(d => `<dt>${esc(d.name)}</dt><dd class="${cls(d.kind, d.value)}">${fmtVal(d.kind, d.value)}</dd>`).join('')}
@@ -212,7 +271,7 @@ S.assets.forEach((a, i) => {
     ${a.notes.length ? '<ul class="notes">' + a.notes.map(n => `<li>${esc(n)}</li>`).join('') + '</ul>' : ''}
     <div class="chart-box"><canvas id="mini-${i}" aria-label="Pris siste ${a.history.dates.length} dager"></canvas></div>
     <div class="strip" id="strip-${i}" title="Eksponering siste ${a.history.dates.length} dager"></div>
-    <div class="strip-legend"><span>${a.history.dates[0]}</span><span>Eksponering (mørkere = mer)</span><span>${a.history.dates.at(-1)}</span></div>
+    <div class="strip-legend"><span>${a.history.dates[0]}</span><span>Regelens eksponering (mørkere = mer)</span><span>${a.history.dates.at(-1)}</span></div>
     <details><summary>Regel: ${esc(a.label)}</summary><ul class="rule-list">${a.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ul></details>`;
   coins.appendChild(card);
 });
@@ -241,18 +300,18 @@ function legend(target, items) {
   document.getElementById(target).innerHTML = items.map(s => `<span><i style="background:${css(s.color)}"></i>${s.name}</span>`).join('');
 }
 function logTicks(v) { const l = Math.log10(v); return Math.abs(l - Math.round(l)) < 1e-9 || [20, 50, 200, 500, 2000, 5000, 20000, 50000].includes(v) ? nf(v, 0) : ''; }
-function equityChart(canvasId, eq) {
+function equityChart(canvasId, eq, series = SERIES) {
   return new Chart(document.getElementById(canvasId), {
     type: 'line',
-    data: { labels: eq.dates, datasets: SERIES.filter(s => eq[s.key]).map(s => ({
+    data: { labels: eq.dates, datasets: series.filter(s => eq[s.key]).map(s => ({
       label: s.name, data: eq[s.key], borderColor: css(s.color), backgroundColor: css(s.color), borderWidth: s.width })) },
     options: baseOptions({ log: true, yfmt: logTicks, tooltip: { label: c => ` ${c.dataset.label}: ${nf(c.parsed.y, 0)} (start 100)` } }),
   });
 }
-function ddChart(canvasId, eq, dd) {
+function ddChart(canvasId, eq, dd, series = SERIES) {
   return new Chart(document.getElementById(canvasId), {
     type: 'line',
-    data: { labels: eq.dates, datasets: SERIES.filter(s => dd[s.key]).map(s => ({
+    data: { labels: eq.dates, datasets: series.filter(s => dd[s.key]).map(s => ({
       label: s.name, data: dd[s.key], borderColor: css(s.color), borderWidth: s.width === 2 ? 1.5 : 1 })) },
     options: baseOptions({ max: 0, yfmt: v => nf(v, 0) + ' %',
       tooltip: { label: c => ` ${c.dataset.label}: ${nf(c.parsed.y, 1)} % fra topp` } }),
@@ -286,12 +345,18 @@ S.assets.forEach((a, i) => {
 
 // ---------- Portefølje ----------
 const PF = R.portfolio;
+const PF_SERIES = [
+  { key: 'strategy', name: 'Momentum-fordeling (i drift)', color: '--s1', width: 2 },
+  { key: 'equal', name: 'Lik vekt, samme regler', color: '--s3', width: 1.5 },
+  { key: 'buy_hold', name: 'Kjøp og hold, lik vekt', color: '--s2', width: 1.5 },
+];
 document.getElementById('pf-sub').textContent =
-  `Lik vekt i ${R.assets.map(a => a.short).join(', ')} fra ${PF.start}, hver coin med sin egen regel. ` +
-  `Etter Firi-kostnader: ${pct(R.costs.fee, 1)} gebyr + ${pct(R.costs.slippage, 1)} påslag per handel, handel ${R.costs.lag_days} døgn etter signal. Logaritmisk skala, start 100.`;
-equityChart('pf-equity', PF.equity);
-ddChart('pf-dd', PF.equity, PF.drawdown);
-legend('pf-legend', SERIES);
+  `${R.assets.map(a => a.short).join(', ')} fra ${PF.start}, simulert som én portefølje: hver søndag får beste coin siste 90 døgn 50 %, neste 30 % og siste 20 %, ` +
+  `og hver coin-regel bestemmer hvor mye av sin del som er investert (i snitt ${pct(PF.avg_cash, 0)} kontanter). ` +
+  `Handel bare ved endring på minst ${nf(PF.band * 100, 0)} prosentpoeng. Etter Firi-kostnader: ${pct(R.costs.fee, 1)} gebyr + ${pct(R.costs.slippage, 1)} påslag per handel. Logaritmisk skala, start 100.`;
+equityChart('pf-equity', PF.equity, PF_SERIES);
+ddChart('pf-dd', PF.equity, PF.drawdown, PF_SERIES);
+legend('pf-legend', PF_SERIES);
 
 function metricsTable(id, rows) {
   const cols = [
@@ -305,7 +370,7 @@ function metricsTable(id, rows) {
     rows.map(([name, m, hl]) => `<tr class="${hl ? 'hl' : ''}"><td>${name}</td>${cols.map(c => `<td>${c[1](m)}</td>`).join('')}</tr>`).join('') +
     `</tbody>`;
 }
-metricsTable('pf-table', SERIES.map(s => [s.name, PF.metrics[s.key], s.key === 'strategy']));
+metricsTable('pf-table', PF_SERIES.map(s => [s.name, PF.metrics[s.key], s.key === 'strategy']));
 
 // ---------- Per coin ----------
 const tabs = document.getElementById('tabs'), panel = document.getElementById('asset-panel');
@@ -404,6 +469,7 @@ document.getElementById('method').innerHTML = `
     <li>En regel ble bare godtatt hvis nabo-parameterne også gjorde det bra, og hvis den tålte høyere kostnader og forsinket handel.</li>
     <li>ETH-regelen ble utformet separat ut fra fire forhåndsdefinerte hypoteser (egen trend, BTC som markedsregime, relativ styrke ETH/BTC og volatilitet). BTC-trenden som markedsfilter var den eneste som ga klar forbedring. Se <code>research/eth_design.py</code>.</li>
     <li>SOL-regelen ble valgt i en rettferdig sammenligning der også dagens regeltype måtte velge parametere uten å kjenne fremtiden (walk-forward, overføring fra BTC/ETH og deflatert Sharpe). ETH-trenden som filter ga minst fall. Ingen testet regel slo kjøp og hold for SOL etter april 2023. Se <code>research/sol_design.py</code> og <code>research/sol_extra.py</code>.</li>
+    <li>Fordelingen mellom coinene ble valgt blant sju metoder (lik vekt, omfordeling av ledig kapital, invers volatilitet, momentum og optimerte faste vekter). Momentum-vekting var den eneste som slo lik vekt både før og etter april 2023 og i en kontroll med bare BTC og ETH fra 2018, uten vesentlig større fall. Den virker for momentumvinduer på 90–180 døgn, men ikke for 30–60. Se <code>research/portfolio_design.py</code>.</li>
   </ol>${wfText}`;
 
 // ---------- Fallgruver ----------
@@ -423,7 +489,7 @@ document.getElementById('pitfalls').innerHTML = pit.map(([t, b]) => `<div class=
 // ---------- Logg ----------
 const log = D.log;
 document.getElementById('log').innerHTML = log.length
-  ? `<thead><tr><th>Dato</th><th>Coin</th><th>Fra</th><th>Til</th><th>Pris</th><th class="l">Handling</th></tr></thead><tbody>` +
+  ? `<thead><tr><th>Dato</th><th>Coin</th><th>Fra (andel)</th><th>Til (andel)</th><th>Pris</th><th class="l">Handling</th></tr></thead><tbody>` +
     log.map(r => `<tr><td>${esc(r.data_date)}</td><td>${esc(r.coin)}</td><td>${r.fra === '' ? '–' : tpct(+r.fra)}</td><td>${tpct(+r.til)}</td><td>${money(+r.pris)}</td><td class="l">${esc(r.handling)}</td></tr>`).join('') + '</tbody>'
   : '<tbody><tr><td class="l">Ingen signaler logget ennå.</td></tr></tbody>';
 

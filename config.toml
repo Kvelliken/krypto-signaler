@@ -34,6 +34,18 @@ name = "Solana"
 strategy = { type = "ens_regime", set = "lang", regime = "ETH-USD", regime_set = "lang", check = "weekly" }
 
 # -----------------------------------------------------------------------------
+# Fordeling av hele porteføljen mellom coinene (se research/portfolio_design.py)
+# Hver søndag rangeres coinene etter avkastning siste 90 døgn og får vekt 50/30/20.
+# Andel av porteføljen = vekt × coinens målandel fra regelen over. Resten er kontanter.
+# -----------------------------------------------------------------------------
+[portfolio]
+method = "momentum"
+mom_window = 90
+weights = [0.5, 0.3, 0.2]
+band = 0.05          # Varsle/handle en coin bare når andelen endres minst 5 prosentpoeng (eller til/fra 0)
+round_to = 0.025     # Andeler avrundes til nærmeste 2,5 %
+
+# -----------------------------------------------------------------------------
 # Kostnader og utførelse (Firi)
 # -----------------------------------------------------------------------------
 [costs]

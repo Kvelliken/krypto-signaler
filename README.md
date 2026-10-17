@@ -27,6 +27,13 @@ Satt under `[[assets]]` i `config.toml`. Alle tall er etter Firi-kostnader (0,7 
 | ETH | Trend × BTC-trend, ukentlig | Antall av SMA50/100/150/200 ETH er over × antall BTC er over / 16, i trinn på 12,5 %, sjekkes søndag |
 | SOL | Trend × ETH-trend, lange snitt, ukentlig | Antall av SMA100/150/200/250/300 SOL er over × antall ETH er over / 25, i trinn på 12,5 %, sjekkes søndag |
 
+### Fordeling av hele porteføljen
+
+Satt under `[portfolio]` i `config.toml`. Hver søndag rangeres coinene etter avkastning siste 90 døgn
+og får vekt 50 / 30 / 20 %. Andel av porteføljen = vekt × coinens målandel fra regelen. Resten står i
+kontanter. En coin handles bare når andelen endres minst 5 prosentpoeng, eller går til eller fra 0.
+Valgt i `research/portfolio_design.py` blant sju fordelingsmetoder.
+
 ETH- og SOL-reglene er utformet i `research/eth_design.py` og `research/sol_design.py`. BTC-regelen ble valgt med `research/search.py` (320 varianter, walk-forward) og `research/classic.py`
 (klassiske regler i alle delperioder, bootstrap). Se nettsiden for forbehold.
 
