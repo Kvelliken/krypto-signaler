@@ -31,7 +31,8 @@ Satt under `[[assets]]` i `config.toml`. Alle tall er etter Firi-kostnader (0,7 
 
 Satt under `[portfolio]` i `config.toml`. Hver søndag rangeres coinene etter avkastning siste 90 døgn
 og får vekt 50 / 30 / 20 %. Andel av porteføljen = vekt × coinens målandel fra regelen. Resten står i
-kontanter. En coin handles bare når andelen endres minst 5 prosentpoeng, eller går til eller fra 0.
+kontanter. En coin handles bare når andelen endres minst 20 prosentpoeng, eller går til eller fra 0
+(økt fra 5 for å spare kostnader).
 Valgt i `research/portfolio_design.py` blant sju fordelingsmetoder.
 
 ETH- og SOL-reglene er utformet i `research/eth_design.py` og `research/sol_design.py`. BTC-regelen ble valgt med `research/search.py` (320 varianter, walk-forward) og `research/classic.py`

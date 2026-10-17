@@ -42,7 +42,8 @@ strategy = { type = "ens_regime", set = "lang", regime = "ETH-USD", regime_set =
 method = "momentum"
 mom_window = 90
 weights = [0.5, 0.3, 0.2]
-band = 0.05          # Varsle/handle en coin bare når andelen endres minst 5 prosentpoeng (eller til/fra 0)
+band = 0.20          # Varsle/handle en coin bare når andelen endres minst 20 prosentpoeng (eller til/fra 0).
+                     # Økt fra 5 til 20 for å spare Firi-kostnader: bedre for alle ukedager i backtesten.
 round_to = 0.025     # Andeler avrundes til nærmeste 2,5 %
 
 # -----------------------------------------------------------------------------
