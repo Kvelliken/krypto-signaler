@@ -1,6 +1,6 @@
 {
-  "updated": "2026-10-17 04:52 UTC",
-  "data_date": "2026-10-16",
+  "updated": "2026-10-18 05:00 UTC",
+  "data_date": "2026-10-17",
   "strategies": {
     "BTC": {
       "type": "sma_band",
@@ -16,15 +16,21 @@
       "check": "weekly"
     },
     "SOL": {
-      "type": "sma_band",
-      "n": 200,
-      "band": 0.02,
-      "check": "daily"
+      "type": "ens_regime",
+      "set": "lang",
+      "regime": "ETH-USD",
+      "regime_set": "lang",
+      "check": "weekly"
     }
   },
   "targets": {
     "BTC": 1.0,
     "ETH": 0.75,
     "SOL": 1.0
+  },
+  "shares": {
+    "BTC": 0.2,
+    "ETH": 0.225,
+    "SOL": 0.5
   }
 }
