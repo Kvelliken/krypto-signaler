@@ -1,9 +1,9 @@
 [
   {
     "symbol": "BTC-USD",
-    "rows": 4419,
+    "rows": 4420,
     "first_date": "2014-09-17",
-    "last_date": "2026-10-22",
+    "last_date": "2026-10-23",
     "sources": [
       "yahoo",
       "coinbase"
@@ -15,9 +15,9 @@
   },
   {
     "symbol": "ETH-USD",
-    "rows": 3270,
+    "rows": 3271,
     "first_date": "2017-11-09",
-    "last_date": "2026-10-22",
+    "last_date": "2026-10-23",
     "sources": [
       "yahoo",
       "coinbase"
@@ -29,9 +29,9 @@
   },
   {
     "symbol": "SOL-USD",
-    "rows": 2387,
+    "rows": 2388,
     "first_date": "2020-04-10",
-    "last_date": "2026-10-22",
+    "last_date": "2026-10-23",
     "sources": [
       "yahoo",
       "coinbase"
