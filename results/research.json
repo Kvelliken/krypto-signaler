@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-25 05:08 UTC",
+ "generated": "2026-10-26 05:10 UTC",
  "costs": {
   "fee": 0.007,
   "slippage": 0.003,
@@ -27,58 +27,58 @@
   "metrics": {
    "strategy": {
     "start": "2021-04-11",
-    "end": "2026-10-24",
+    "end": "2026-10-25",
     "years": 5.54,
-    "final_multiple": 7.82094,
-    "total_return": 6.82094,
-    "cagr": 0.449695,
-    "vol": 0.504372,
-    "sharpe": 0.98714,
-    "sortino": 1.147254,
+    "final_multiple": 7.746428,
+    "total_return": 6.746428,
+    "cagr": 0.446928,
+    "vol": 0.504269,
+    "sharpe": 0.983448,
+    "sortino": 1.14345,
     "max_dd": -0.481534,
-    "calmar": 0.93388,
-    "time_in_market": 0.651013,
-    "avg_exposure": 0.480611,
+    "calmar": 0.928133,
+    "time_in_market": 0.651186,
+    "avg_exposure": 0.480838,
     "trades": 113,
-    "trades_per_year": 20.402002,
+    "trades_per_year": 20.391922,
     "cost_drag": 0.330825,
     "worst_day": -0.24715
    },
    "equal": {
     "start": "2021-04-11",
-    "end": "2026-10-24",
+    "end": "2026-10-25",
     "years": 5.54,
-    "final_multiple": 4.539273,
-    "total_return": 3.539273,
-    "cagr": 0.314069,
-    "vol": 0.460307,
-    "sharpe": 0.822599,
-    "sortino": 0.937244,
+    "final_multiple": 4.496498,
+    "total_return": 3.496498,
+    "cagr": 0.311648,
+    "vol": 0.460215,
+    "sharpe": 0.818665,
+    "sortino": 0.933163,
     "max_dd": -0.487076,
-    "calmar": 0.644803,
-    "time_in_market": 0.651013,
-    "avg_exposure": 0.488528,
+    "calmar": 0.639834,
+    "time_in_market": 0.651186,
+    "avg_exposure": 0.488742,
     "trades": 90,
-    "trades_per_year": 16.249382,
+    "trades_per_year": 16.241354,
     "cost_drag": 0.21582,
     "worst_day": -0.187681
    },
    "buy_hold": {
     "start": "2021-04-11",
-    "end": "2026-10-24",
+    "end": "2026-10-25",
     "years": 5.54,
-    "final_multiple": 2.020958,
-    "total_return": 1.020958,
-    "cagr": 0.13545,
-    "vol": 0.797392,
-    "sharpe": 0.561515,
-    "sortino": 0.80642,
+    "final_multiple": 2.00064,
+    "total_return": 1.00064,
+    "cagr": 0.13331,
+    "vol": 0.797209,
+    "sharpe": 0.559092,
+    "sortino": 0.802988,
     "max_dd": -0.907265,
-    "calmar": 0.149295,
+    "calmar": 0.146936,
     "time_in_market": 0.999506,
-    "avg_exposure": 1.00708,
+    "avg_exposure": 1.007079,
     "trades": 1,
-    "trades_per_year": 0.180549,
+    "trades_per_year": 0.180459,
     "cost_drag": 0.009999,
     "worst_day": -0.298506
    }
@@ -759,7 +759,8 @@
     "2026-10-15",
     "2026-10-18",
     "2026-10-21",
-    "2026-10-24"
+    "2026-10-24",
+    "2026-10-25"
    ],
    "strategy": [
     99.0,
@@ -1436,7 +1437,8 @@
     803.0988,
     795.5364,
     814.9088,
-    782.094
+    782.3411,
+    774.6428
    ],
    "equal": [
     99.025,
@@ -2113,7 +2115,8 @@
     465.3093,
     461.6502,
     472.4964,
-    453.9273
+    454.053,
+    449.6498
    ],
    "buy_hold": [
     99.0001,
@@ -2790,7 +2793,8 @@
     207.8699,
     205.7528,
     211.1191,
-    202.0958
+    202.1664,
+    200.064
    ]
   },
   "drawdown": {
@@ -3469,7 +3473,8 @@
     -33.08,
     -33.71,
     -32.1,
-    -34.83
+    -34.81,
+    -35.45
    ],
    "equal": [
     0.0,
@@ -4146,7 +4151,8 @@
     -33.62,
     -34.14,
     -32.59,
-    -35.24
+    -35.22,
+    -35.85
    ],
    "buy_hold": [
     0.0,
@@ -4823,10 +4829,11 @@
     -51.69,
     -52.18,
     -50.93,
-    -53.03
+    -53.01,
+    -53.5
    ]
   },
-  "avg_cash": 0.519389,
+  "avg_cash": 0.519162,
   "yearly": [
    {
     "year": 2021,
@@ -4860,8 +4867,8 @@
    },
    {
     "year": 2026,
-    "strategy": -0.060242,
-    "buy_hold": -0.164309,
+    "strategy": -0.069196,
+    "buy_hold": -0.172711,
     "partial": true
    }
   ]
@@ -4884,44 +4891,44 @@
     "Mellom grensene beholdes posisjonen (hindrer frem-og-tilbake-handler)."
    ],
    "data_start": "2014-09-17",
-   "data_end": "2026-10-24",
+   "data_end": "2026-10-25",
    "eval_start": "2015-09-18",
    "metrics": {
     "strategy": {
      "start": "2015-09-18",
-     "end": "2026-10-24",
+     "end": "2026-10-25",
      "years": 11.1,
-     "final_multiple": 561.923284,
-     "total_return": 560.923284,
-     "cagr": 0.768782,
-     "vol": 0.519162,
-     "sharpe": 1.356084,
-     "sortino": 1.485615,
+     "final_multiple": 556.938446,
+     "total_return": 555.938446,
+     "cagr": 0.767115,
+     "vol": 0.519109,
+     "sharpe": 1.354352,
+     "sortino": 1.484042,
      "max_dd": -0.660747,
-     "calmar": 1.163504,
-     "time_in_market": 0.611837,
-     "avg_exposure": 0.611837,
+     "calmar": 1.160981,
+     "time_in_market": 0.611933,
+     "avg_exposure": 0.611933,
      "trades": 37,
-     "trades_per_year": 3.332737,
+     "trades_per_year": 3.331916,
      "cost_drag": 0.37,
      "worst_day": -0.187411
     },
     "buy_hold": {
      "start": "2015-09-18",
-     "end": "2026-10-24",
+     "end": "2026-10-25",
      "years": 11.1,
-     "final_multiple": 343.221246,
-     "total_return": 342.221246,
-     "cagr": 0.691957,
-     "vol": 0.657078,
-     "sharpe": 1.130654,
-     "sortino": 1.519442,
+     "final_multiple": 340.176521,
+     "total_return": 339.176521,
+     "cagr": 0.69038,
+     "vol": 0.657005,
+     "sharpe": 1.129286,
+     "sortino": 1.517729,
      "max_dd": -0.83399,
-     "calmar": 0.829694,
+     "calmar": 0.827804,
      "time_in_market": 0.999753,
      "avg_exposure": 0.999753,
      "trades": 1,
-     "trades_per_year": 0.090074,
+     "trades_per_year": 0.090052,
      "cost_drag": 0.01,
      "worst_day": -0.371695
     }
@@ -4929,42 +4936,42 @@
    "periods": {
     "full": {
      "start": "2015-09-18",
-     "end": "2026-10-24",
+     "end": "2026-10-25",
      "strategy": {
       "start": "2015-09-18",
-      "end": "2026-10-24",
+      "end": "2026-10-25",
       "years": 11.1,
-      "final_multiple": 561.923284,
-      "total_return": 560.923284,
-      "cagr": 0.768782,
-      "vol": 0.519162,
-      "sharpe": 1.356084,
-      "sortino": 1.485615,
+      "final_multiple": 556.938446,
+      "total_return": 555.938446,
+      "cagr": 0.767115,
+      "vol": 0.519109,
+      "sharpe": 1.354352,
+      "sortino": 1.484042,
       "max_dd": -0.660747,
-      "calmar": 1.163504,
-      "time_in_market": 0.611837,
-      "avg_exposure": 0.611837,
+      "calmar": 1.160981,
+      "time_in_market": 0.611933,
+      "avg_exposure": 0.611933,
       "trades": 37,
-      "trades_per_year": 3.332737,
+      "trades_per_year": 3.331916,
       "cost_drag": 0.37,
       "worst_day": -0.187411
      },
      "buy_hold": {
       "start": "2015-09-18",
-      "end": "2026-10-24",
+      "end": "2026-10-25",
       "years": 11.1,
-      "final_multiple": 343.221246,
-      "total_return": 342.221246,
-      "cagr": 0.691957,
-      "vol": 0.657078,
-      "sharpe": 1.130654,
-      "sortino": 1.519442,
+      "final_multiple": 340.176521,
+      "total_return": 339.176521,
+      "cagr": 0.69038,
+      "vol": 0.657005,
+      "sharpe": 1.129286,
+      "sortino": 1.517729,
       "max_dd": -0.83399,
-      "calmar": 0.829694,
+      "calmar": 0.827804,
       "time_in_market": 0.999753,
       "avg_exposure": 0.999753,
       "trades": 1,
-      "trades_per_year": 0.090074,
+      "trades_per_year": 0.090052,
       "cost_drag": 0.01,
       "worst_day": -0.371695
      }
@@ -5013,42 +5020,42 @@
     },
     "holdout": {
      "start": "2024-10-16",
-     "end": "2026-10-24",
+     "end": "2026-10-25",
      "strategy": {
       "start": "2024-10-16",
-      "end": "2026-10-24",
-      "years": 2.02,
-      "final_multiple": 1.220914,
-      "total_return": 0.220914,
-      "cagr": 0.103682,
-      "vol": 0.298007,
-      "sharpe": 0.478879,
-      "sortino": 0.544029,
+      "end": "2026-10-25",
+      "years": 2.03,
+      "final_multiple": 1.210083,
+      "total_return": 0.210083,
+      "cagr": 0.098692,
+      "vol": 0.297878,
+      "sharpe": 0.463751,
+      "sortino": 0.527724,
       "max_dd": -0.308615,
-      "calmar": 0.335959,
-      "time_in_market": 0.5318,
-      "avg_exposure": 0.5318,
+      "calmar": 0.319791,
+      "time_in_market": 0.532432,
+      "avg_exposure": 0.532432,
       "trades": 9,
-      "trades_per_year": 4.448241,
+      "trades_per_year": 4.44223,
       "cost_drag": 0.09,
       "worst_day": -0.095952
      },
      "buy_hold": {
       "start": "2024-10-16",
-      "end": "2026-10-24",
-      "years": 2.02,
-      "final_multiple": 1.182647,
-      "total_return": 0.182647,
-      "cagr": 0.086447,
-      "vol": 0.442602,
-      "sharpe": 0.407643,
-      "sortino": 0.610431,
+      "end": "2026-10-25",
+      "years": 2.03,
+      "final_multiple": 1.172156,
+      "total_return": 0.172156,
+      "cagr": 0.081558,
+      "vol": 0.442352,
+      "sharpe": 0.397431,
+      "sortino": 0.595446,
       "max_dd": -0.5306,
-      "calmar": 0.162923,
-      "time_in_market": 0.998647,
-      "avg_exposure": 0.998647,
+      "calmar": 0.153709,
+      "time_in_market": 0.998649,
+      "avg_exposure": 0.998649,
       "trades": 1,
-      "trades_per_year": 0.494249,
+      "trades_per_year": 0.493581,
       "cost_drag": 0.01,
       "worst_day": -0.141299
      }
@@ -6408,7 +6415,7 @@
      "2026-10-17",
      "2026-10-20",
      "2026-10-23",
-     "2026-10-24"
+     "2026-10-25"
     ],
     "strategy": [
      100.0,
@@ -7763,7 +7770,7 @@
      56618.4359,
      57702.946,
      56404.1848,
-     56192.3284
+     55693.8446
     ],
     "buy_hold": [
      99.0,
@@ -9118,7 +9125,7 @@
      34582.39,
      35244.8059,
      34451.526,
-     34322.1246
+     34017.6521
     ]
    },
    "drawdown": {
@@ -10475,7 +10482,7 @@
      -20.85,
      -19.33,
      -21.15,
-     -21.45
+     -22.14
     ],
     "buy_hold": [
      0.0,
@@ -11830,63 +11837,63 @@
      -34.77,
      -33.52,
      -35.01,
-     -35.26
+     -35.83
     ]
    },
    "cost_sensitivity": [
     {
      "cost": 0.005,
-     "cagr": 0.79873,
-     "sharpe": 1.390212,
+     "cagr": 0.797027,
+     "sharpe": 1.388472,
      "max_dd": -0.646795,
-     "final_multiple": 677.062585
+     "final_multiple": 671.056344
     },
     {
      "cost": 0.01,
-     "cagr": 0.768782,
-     "sharpe": 1.356084,
+     "cagr": 0.767115,
+     "sharpe": 1.354352,
      "max_dd": -0.660747,
-     "final_multiple": 561.923284
+     "final_multiple": 556.938446
     },
     {
      "cost": 0.015,
-     "cagr": 0.739185,
-     "sharpe": 1.321722,
+     "cagr": 0.737553,
+     "sharpe": 1.319999,
      "max_dd": -0.674215,
-     "final_multiple": 465.924294
+     "final_multiple": 461.791067
     },
     {
      "cost": 0.02,
-     "cagr": 0.709936,
-     "sharpe": 1.287158,
+     "cagr": 0.708339,
+     "sharpe": 1.285445,
      "max_dd": -0.687212,
-     "final_multiple": 385.957628
+     "final_multiple": 382.533787
     },
     {
      "cost": 0.03,
-     "cagr": 0.652475,
-     "sharpe": 1.217563,
+     "cagr": 0.650945,
+     "sharpe": 1.215869,
      "max_dd": -0.711852,
-     "final_multiple": 264.076038
+     "final_multiple": 261.733412
     }
    ],
    "lag_sensitivity": [
     {
      "lag_days": 1,
-     "cagr": 0.768782,
-     "sharpe": 1.356084,
+     "cagr": 0.767115,
+     "sharpe": 1.354352,
      "max_dd": -0.660747
     },
     {
      "lag_days": 2,
-     "cagr": 0.736052,
-     "sharpe": 1.327615,
+     "cagr": 0.734423,
+     "sharpe": 1.325872,
      "max_dd": -0.657302
     },
     {
      "lag_days": 3,
-     "cagr": 0.681403,
-     "sharpe": 1.261999,
+     "cagr": 0.679839,
+     "sharpe": 1.260274,
      "max_dd": -0.711622
     }
    ],
@@ -11910,53 +11917,53 @@
     ],
     "cagr": [
      [
-      0.549063,
-      0.649081,
-      0.704596,
-      0.703289,
-      0.686327
+      0.547653,
+      0.647555,
+      0.703005,
+      0.7017,
+      0.684758
      ],
      [
-      0.801681,
-      0.788948,
-      0.780544,
-      0.821269,
-      0.791408
+      0.799975,
+      0.787257,
+      0.778862,
+      0.819539,
+      0.789714
      ],
      [
-      0.729299,
-      0.741814,
-      0.768782,
-      0.724085,
-      0.728397
+      0.727678,
+      0.740179,
+      0.767115,
+      0.722471,
+      0.726777
      ],
      [
-      0.693707,
-      0.65846,
-      0.696309,
-      0.693336,
-      0.661478
+      0.692129,
+      0.656923,
+      0.694728,
+      0.691758,
+      0.659937
      ],
      [
-      0.559408,
-      0.608614,
-      0.638799,
-      0.666757,
-      0.664103
+      0.557987,
+      0.607136,
+      0.637285,
+      0.665211,
+      0.66256
      ],
      [
-      0.578822,
-      0.564981,
-      0.612638,
-      0.594756,
-      0.578188
+      0.577378,
+      0.563553,
+      0.611155,
+      0.593293,
+      0.576745
      ]
     ],
     "current": [
      150,
      0.02
     ],
-    "buy_hold_cagr": 0.691957
+    "buy_hold_cagr": 0.69038
    },
    "yearly": [
     {
@@ -12027,14 +12034,14 @@
     },
     {
      "year": 2026,
-     "strategy": -0.000618,
-     "buy_hold": -0.077011,
+     "strategy": -0.009484,
+     "buy_hold": -0.085199,
      "partial": true
     }
    ],
    "years_beaten": 4,
    "years_total": 10,
-   "prob_beats": 0.6575
+   "prob_beats": 0.6545
   },
   {
    "symbol": "ETH-USD",
@@ -12055,44 +12062,44 @@
     "Signalet sjekkes bare ved døgnslutt søndag (00:00 UTC natt til mandag); resten av uken beholdes posisjonen."
    ],
    "data_start": "2017-11-09",
-   "data_end": "2026-10-24",
+   "data_end": "2026-10-25",
    "eval_start": "2018-11-10",
    "metrics": {
     "strategy": {
      "start": "2018-11-10",
-     "end": "2026-10-24",
+     "end": "2026-10-25",
      "years": 7.96,
-     "final_multiple": 23.933289,
-     "total_return": 22.933289,
-     "cagr": 0.490474,
-     "vol": 0.484584,
-     "sharpe": 1.064125,
-     "sortino": 1.178366,
+     "final_multiple": 23.663917,
+     "total_return": 22.663917,
+     "cagr": 0.488151,
+     "vol": 0.484521,
+     "sharpe": 1.060979,
+     "sortino": 1.175329,
      "max_dd": -0.467425,
-     "calmar": 1.049311,
-     "time_in_market": 0.601858,
-     "avg_exposure": 0.449347,
-     "trades": 128,
-     "trades_per_year": 16.088094,
-     "cost_drag": 0.415092,
+     "calmar": 1.044343,
+     "time_in_market": 0.601995,
+     "avg_exposure": 0.449446,
+     "trades": 129,
+     "trades_per_year": 16.208204,
+     "cost_drag": 0.417428,
      "worst_day": -0.188605
     },
     "buy_hold": {
      "start": "2018-11-10",
-     "end": "2026-10-24",
+     "end": "2026-10-25",
      "years": 7.96,
-     "final_multiple": 10.971503,
-     "total_return": 9.971503,
-     "cagr": 0.351292,
-     "vol": 0.805545,
-     "sharpe": 0.781176,
-     "sortino": 1.078816,
+     "final_multiple": 10.838235,
+     "total_return": 9.838235,
+     "cagr": 0.349079,
+     "vol": 0.805422,
+     "sharpe": 0.779133,
+     "sortino": 1.076113,
      "max_dd": -0.793512,
-     "calmar": 0.442705,
+     "calmar": 0.439916,
      "time_in_market": 0.999656,
      "avg_exposure": 0.999656,
      "trades": 1,
-     "trades_per_year": 0.125688,
+     "trades_per_year": 0.125645,
      "cost_drag": 0.01,
      "worst_day": -0.423472
     }
@@ -12100,42 +12107,42 @@
    "periods": {
     "full": {
      "start": "2018-11-10",
-     "end": "2026-10-24",
+     "end": "2026-10-25",
      "strategy": {
       "start": "2018-11-10",
-      "end": "2026-10-24",
+      "end": "2026-10-25",
       "years": 7.96,
-      "final_multiple": 23.933289,
-      "total_return": 22.933289,
-      "cagr": 0.490474,
-      "vol": 0.484584,
-      "sharpe": 1.064125,
-      "sortino": 1.178366,
+      "final_multiple": 23.663917,
+      "total_return": 22.663917,
+      "cagr": 0.488151,
+      "vol": 0.484521,
+      "sharpe": 1.060979,
+      "sortino": 1.175329,
       "max_dd": -0.467425,
-      "calmar": 1.049311,
-      "time_in_market": 0.601858,
-      "avg_exposure": 0.449347,
-      "trades": 128,
-      "trades_per_year": 16.088094,
-      "cost_drag": 0.415092,
+      "calmar": 1.044343,
+      "time_in_market": 0.601995,
+      "avg_exposure": 0.449446,
+      "trades": 129,
+      "trades_per_year": 16.208204,
+      "cost_drag": 0.417428,
       "worst_day": -0.188605
      },
      "buy_hold": {
       "start": "2018-11-10",
-      "end": "2026-10-24",
+      "end": "2026-10-25",
       "years": 7.96,
-      "final_multiple": 10.971503,
-      "total_return": 9.971503,
-      "cagr": 0.351292,
-      "vol": 0.805545,
-      "sharpe": 0.781176,
-      "sortino": 1.078816,
+      "final_multiple": 10.838235,
+      "total_return": 9.838235,
+      "cagr": 0.349079,
+      "vol": 0.805422,
+      "sharpe": 0.779133,
+      "sortino": 1.076113,
       "max_dd": -0.793512,
-      "calmar": 0.442705,
+      "calmar": 0.439916,
       "time_in_market": 0.999656,
       "avg_exposure": 0.999656,
       "trades": 1,
-      "trades_per_year": 0.125688,
+      "trades_per_year": 0.125645,
       "cost_drag": 0.01,
       "worst_day": -0.423472
      }
@@ -12184,42 +12191,42 @@
     },
     "holdout": {
      "start": "2024-10-16",
-     "end": "2026-10-24",
+     "end": "2026-10-25",
      "strategy": {
       "start": "2024-10-16",
-      "end": "2026-10-24",
-      "years": 2.02,
-      "final_multiple": 1.116055,
-      "total_return": 0.116055,
-      "cagr": 0.055768,
-      "vol": 0.366433,
-      "sharpe": 0.329193,
-      "sortino": 0.355725,
-      "max_dd": -0.315382,
-      "calmar": 0.176828,
-      "time_in_market": 0.510149,
-      "avg_exposure": 0.364866,
-      "trades": 32,
-      "trades_per_year": 15.815968,
-      "cost_drag": 0.117017,
+      "end": "2026-10-25",
+      "years": 2.03,
+      "final_multiple": 1.103494,
+      "total_return": 0.103494,
+      "cagr": 0.049809,
+      "vol": 0.366276,
+      "sharpe": 0.313733,
+      "sortino": 0.339679,
+      "max_dd": -0.322325,
+      "calmar": 0.154532,
+      "time_in_market": 0.510811,
+      "avg_exposure": 0.365368,
+      "trades": 33,
+      "trades_per_year": 16.288176,
+      "cost_drag": 0.119353,
       "worst_day": -0.120421
      },
      "buy_hold": {
       "start": "2024-10-16",
-      "end": "2026-10-24",
-      "years": 2.02,
-      "final_multiple": 0.893035,
-      "total_return": -0.106965,
-      "cagr": -0.05438,
-      "vol": 0.690669,
-      "sharpe": 0.260579,
-      "sortino": 0.399125,
+      "end": "2026-10-25",
+      "years": 2.03,
+      "final_multiple": 0.882188,
+      "total_return": -0.117812,
+      "cagr": -0.059995,
+      "vol": 0.690259,
+      "sharpe": 0.251702,
+      "sortino": 0.385679,
       "max_dd": -0.676112,
-      "calmar": -0.08043,
-      "time_in_market": 0.998647,
-      "avg_exposure": 0.998647,
+      "calmar": -0.088736,
+      "time_in_market": 0.998649,
+      "avg_exposure": 0.998649,
       "trades": 1,
-      "trades_per_year": 0.494249,
+      "trades_per_year": 0.493581,
       "cost_drag": 0.01,
       "worst_day": -0.150138
      }
@@ -13196,7 +13203,7 @@
      "2026-10-17",
      "2026-10-20",
      "2026-10-23",
-     "2026-10-24"
+     "2026-10-25"
     ],
     "strategy": [
      100.0,
@@ -14168,7 +14175,7 @@
      2426.5628,
      2461.6608,
      2414.8053,
-     2393.3289
+     2366.3917
     ],
     "buy_hold": [
      99.0,
@@ -15140,7 +15147,7 @@
      1117.8505,
      1139.7117,
      1110.5271,
-     1097.1503
+     1083.8235
     ]
    },
    "drawdown": {
@@ -16114,7 +16121,7 @@
      -30.51,
      -29.5,
      -30.85,
-     -31.46
+     -32.23
     ],
     "buy_hold": [
      0.0,
@@ -17086,63 +17093,63 @@
      -50.33,
      -49.36,
      -50.65,
-     -51.25
+     -51.84
     ]
    },
    "cost_sensitivity": [
     {
      "cost": 0.005,
-     "cagr": 0.530002,
-     "sharpe": 1.118452,
+     "cagr": 0.527829,
+     "sharpe": 1.115601,
      "max_dd": -0.440877,
-     "final_multiple": 29.474476
+     "final_multiple": 29.176858
     },
     {
      "cost": 0.01,
-     "cagr": 0.490474,
-     "sharpe": 1.064125,
+     "cagr": 0.488151,
+     "sharpe": 1.060979,
      "max_dd": -0.467425,
-     "final_multiple": 23.933289
+     "final_multiple": 23.663917
     },
     {
      "cost": 0.015,
-     "cagr": 0.45188,
-     "sharpe": 1.009606,
+     "cagr": 0.449417,
+     "sharpe": 1.006167,
      "max_dd": -0.493316,
-     "final_multiple": 19.424601
+     "final_multiple": 19.183489
     },
     {
      "cost": 0.02,
-     "cagr": 0.4142,
-     "sharpe": 0.954936,
+     "cagr": 0.411606,
+     "sharpe": 0.951205,
      "max_dd": -0.51801,
-     "final_multiple": 15.757744
+     "final_multiple": 15.543906
     },
     {
      "cost": 0.03,
-     "cagr": 0.341505,
-     "sharpe": 0.845306,
+     "cagr": 0.338673,
+     "sharpe": 0.840997,
      "max_dd": -0.564014,
-     "final_multiple": 10.354984
+     "final_multiple": 10.19049
     }
    ],
    "lag_sensitivity": [
     {
      "lag_days": 1,
-     "cagr": 0.490474,
-     "sharpe": 1.064125,
+     "cagr": 0.488151,
+     "sharpe": 1.060979,
      "max_dd": -0.467425
     },
     {
      "lag_days": 2,
-     "cagr": 0.464424,
-     "sharpe": 1.026414,
+     "cagr": 0.462565,
+     "sharpe": 1.023875,
      "max_dd": -0.515898
     },
     {
      "lag_days": 3,
-     "cagr": 0.475303,
-     "sharpe": 1.040029,
+     "cagr": 0.473436,
+     "sharpe": 1.037508,
      "max_dd": -0.49152
     }
    ],
@@ -17161,26 +17168,26 @@
     ],
     "cagr": [
      [
-      0.350394,
-      0.429072,
-      0.39703
+      0.349337,
+      0.427658,
+      0.39584
      ],
      [
-      0.40453,
-      0.490474,
-      0.469592
+      0.403149,
+      0.488151,
+      0.46774
      ],
      [
-      0.353203,
-      0.451964,
-      0.439511
+      0.35114,
+      0.449094,
+      0.437122
      ]
     ],
     "current": [
      "middels",
      "middels"
     ],
-    "buy_hold_cagr": 0.351292
+    "buy_hold_cagr": 0.349079
    },
    "yearly": [
     {
@@ -17233,14 +17240,14 @@
     },
     {
      "year": 2026,
-     "strategy": -0.084003,
-     "buy_hold": -0.206158,
+     "strategy": -0.094313,
+     "buy_hold": -0.2158,
      "partial": true
     }
    ],
    "years_beaten": 3,
    "years_total": 7,
-   "prob_beats": 0.549
+   "prob_beats": 0.553
   },
   {
    "symbol": "SOL-USD",
@@ -17261,44 +17268,44 @@
     "Signalet sjekkes bare ved døgnslutt søndag (00:00 UTC natt til mandag); resten av uken beholdes posisjonen."
    ],
    "data_start": "2020-04-10",
-   "data_end": "2026-10-24",
+   "data_end": "2026-10-25",
    "eval_start": "2021-04-11",
    "metrics": {
     "strategy": {
      "start": "2021-04-11",
-     "end": "2026-10-24",
+     "end": "2026-10-25",
      "years": 5.54,
-     "final_multiple": 6.147816,
-     "total_return": 5.147816,
-     "cagr": 0.388042,
-     "vol": 0.684197,
-     "sharpe": 0.818096,
-     "sortino": 0.935277,
+     "final_multiple": 6.087679,
+     "total_return": 5.087679,
+     "cagr": 0.385357,
+     "vol": 0.684046,
+     "sharpe": 0.815295,
+     "sortino": 0.932423,
      "max_dd": -0.722237,
-     "calmar": 0.537278,
-     "time_in_market": 0.549679,
-     "avg_exposure": 0.414535,
+     "calmar": 0.533561,
+     "time_in_market": 0.549901,
+     "avg_exposure": 0.414825,
      "trades": 74,
-     "trades_per_year": 13.360603,
+     "trades_per_year": 13.354002,
      "cost_drag": 0.24051,
      "worst_day": -0.372088
     },
     "buy_hold": {
      "start": "2021-04-11",
-     "end": "2026-10-24",
+     "end": "2026-10-25",
      "years": 5.54,
-     "final_multiple": 3.623375,
-     "total_return": 2.623375,
-     "cagr": 0.261674,
-     "vol": 1.024961,
-     "sharpe": 0.741284,
-     "sortino": 1.133107,
+     "final_multiple": 3.587931,
+     "total_return": 2.587931,
+     "cagr": 0.259293,
+     "vol": 1.024721,
+     "sharpe": 0.73937,
+     "sortino": 1.130189,
      "max_dd": -0.962725,
-     "calmar": 0.271806,
+     "calmar": 0.269333,
      "time_in_market": 0.999506,
      "avg_exposure": 0.999506,
      "trades": 1,
-     "trades_per_year": 0.180549,
+     "trades_per_year": 0.180459,
      "cost_drag": 0.01,
      "worst_day": -0.422809
     }
@@ -17306,42 +17313,42 @@
    "periods": {
     "full": {
      "start": "2021-04-11",
-     "end": "2026-10-24",
+     "end": "2026-10-25",
      "strategy": {
       "start": "2021-04-11",
-      "end": "2026-10-24",
+      "end": "2026-10-25",
       "years": 5.54,
-      "final_multiple": 6.147816,
-      "total_return": 5.147816,
-      "cagr": 0.388042,
-      "vol": 0.684197,
-      "sharpe": 0.818096,
-      "sortino": 0.935277,
+      "final_multiple": 6.087679,
+      "total_return": 5.087679,
+      "cagr": 0.385357,
+      "vol": 0.684046,
+      "sharpe": 0.815295,
+      "sortino": 0.932423,
       "max_dd": -0.722237,
-      "calmar": 0.537278,
-      "time_in_market": 0.549679,
-      "avg_exposure": 0.414535,
+      "calmar": 0.533561,
+      "time_in_market": 0.549901,
+      "avg_exposure": 0.414825,
       "trades": 74,
-      "trades_per_year": 13.360603,
+      "trades_per_year": 13.354002,
       "cost_drag": 0.24051,
       "worst_day": -0.372088
      },
      "buy_hold": {
       "start": "2021-04-11",
-      "end": "2026-10-24",
+      "end": "2026-10-25",
       "years": 5.54,
-      "final_multiple": 3.623375,
-      "total_return": 2.623375,
-      "cagr": 0.261674,
-      "vol": 1.024961,
-      "sharpe": 0.741284,
-      "sortino": 1.133107,
+      "final_multiple": 3.587931,
+      "total_return": 2.587931,
+      "cagr": 0.259293,
+      "vol": 1.024721,
+      "sharpe": 0.73937,
+      "sortino": 1.130189,
       "max_dd": -0.962725,
-      "calmar": 0.271806,
+      "calmar": 0.269333,
       "time_in_market": 0.999506,
       "avg_exposure": 0.999506,
       "trades": 1,
-      "trades_per_year": 0.180549,
+      "trades_per_year": 0.180459,
       "cost_drag": 0.01,
       "worst_day": -0.422809
      }
@@ -17390,42 +17397,42 @@
     },
     "holdout": {
      "start": "2024-10-16",
-     "end": "2026-10-24",
+     "end": "2026-10-25",
      "strategy": {
       "start": "2024-10-16",
-      "end": "2026-10-24",
-      "years": 2.02,
-      "final_multiple": 0.812307,
-      "total_return": -0.187693,
-      "cagr": -0.097641,
-      "vol": 0.434264,
-      "sharpe": -0.020418,
-      "sortino": -0.020127,
+      "end": "2026-10-25",
+      "years": 2.03,
+      "final_multiple": 0.804361,
+      "total_return": -0.195639,
+      "cagr": -0.101884,
+      "vol": 0.434027,
+      "sharpe": -0.031515,
+      "sortino": -0.031112,
       "max_dd": -0.37979,
-      "calmar": -0.257093,
-      "time_in_market": 0.443843,
-      "avg_exposure": 0.338485,
+      "calmar": -0.268265,
+      "time_in_market": 0.444595,
+      "avg_exposure": 0.339378,
       "trades": 21,
-      "trades_per_year": 10.379229,
+      "trades_per_year": 10.365203,
       "cost_drag": 0.07596,
       "worst_day": -0.146283
      },
      "buy_hold": {
       "start": "2024-10-16",
-      "end": "2026-10-24",
-      "years": 2.02,
-      "final_multiple": 0.656195,
-      "total_return": -0.343805,
-      "cagr": -0.187976,
-      "vol": 0.763319,
-      "sharpe": 0.107087,
-      "sortino": 0.167427,
+      "end": "2026-10-25",
+      "years": 2.03,
+      "final_multiple": 0.649776,
+      "total_return": -0.350224,
+      "cagr": -0.191679,
+      "vol": 0.762836,
+      "sharpe": 0.100686,
+      "sortino": 0.157423,
       "max_dd": -0.762516,
-      "calmar": -0.246521,
-      "time_in_market": 0.998647,
-      "avg_exposure": 0.998647,
+      "calmar": -0.251377,
+      "time_in_market": 0.998649,
+      "avg_exposure": 0.998649,
       "trades": 1,
-      "trades_per_year": 0.494249,
+      "trades_per_year": 0.493581,
       "cost_drag": 0.01,
       "worst_day": -0.204344
      }
@@ -18107,7 +18114,8 @@
      "2026-10-15",
      "2026-10-18",
      "2026-10-21",
-     "2026-10-24"
+     "2026-10-24",
+     "2026-10-25"
     ],
     "strategy": [
      99.0,
@@ -18784,7 +18792,8 @@
      633.4276,
      625.5744,
      642.2262,
-     614.7816
+     615.0322,
+     608.7679
     ],
     "buy_hold": [
      99.0,
@@ -19461,7 +19470,8 @@
      373.327,
      368.6984,
      378.5126,
-     362.3375
+     362.4851,
+     358.7931
     ]
    },
    "drawdown": {
@@ -20140,7 +20150,8 @@
      -53.63,
      -54.21,
      -52.99,
-     -55.0
+     -54.98,
+     -55.44
     ],
     "buy_hold": [
      0.0,
@@ -20817,63 +20828,64 @@
      -59.78,
      -60.28,
      -59.22,
-     -60.96
+     -60.95,
+     -61.34
     ]
    },
    "cost_sensitivity": [
     {
      "cost": 0.005,
-     "cagr": 0.418618,
-     "sharpe": 0.849996,
+     "cagr": 0.415859,
+     "sharpe": 0.847185,
      "max_dd": -0.708811,
-     "final_multiple": 6.936374
+     "final_multiple": 6.868523
     },
     {
      "cost": 0.01,
-     "cagr": 0.388042,
-     "sharpe": 0.818096,
+     "cagr": 0.385357,
+     "sharpe": 0.815295,
      "max_dd": -0.722237,
-     "final_multiple": 6.147816
+     "final_multiple": 6.087679
     },
     {
      "cost": 0.015,
-     "cagr": 0.358054,
-     "sharpe": 0.786135,
+     "cagr": 0.355443,
+     "sharpe": 0.783344,
      "max_dd": -0.735071,
-     "final_multiple": 5.447343
+     "final_multiple": 5.394058
     },
     {
      "cost": 0.02,
-     "cagr": 0.328646,
-     "sharpe": 0.754124,
+     "cagr": 0.326105,
+     "sharpe": 0.751344,
      "max_dd": -0.747338,
-     "final_multiple": 4.825287
+     "final_multiple": 4.778087
     },
     {
      "cost": 0.03,
-     "cagr": 0.271525,
-     "sharpe": 0.689995,
+     "cagr": 0.26912,
+     "sharpe": 0.687236,
      "max_dd": -0.770267,
-     "final_multiple": 3.782864
+     "final_multiple": 3.745861
     }
    ],
    "lag_sensitivity": [
     {
      "lag_days": 1,
-     "cagr": 0.388042,
-     "sharpe": 0.818096,
+     "cagr": 0.385357,
+     "sharpe": 0.815295,
      "max_dd": -0.722237
     },
     {
      "lag_days": 2,
-     "cagr": 0.324486,
-     "sharpe": 0.749292,
+     "cagr": 0.321955,
+     "sharpe": 0.746534,
      "max_dd": -0.749636
     },
     {
      "lag_days": 3,
-     "cagr": 0.323039,
-     "sharpe": 0.747848,
+     "cagr": 0.320512,
+     "sharpe": 0.745084,
      "max_dd": -0.717846
     }
    ],
@@ -20892,26 +20904,26 @@
     ],
     "cagr": [
      [
-      0.275672,
-      0.305299,
-      0.26176
+      0.274963,
+      0.304272,
+      0.260509
      ],
      [
-      0.282311,
-      0.321675,
-      0.313232
+      0.281313,
+      0.320334,
+      0.311319
      ],
      [
-      0.363206,
-      0.420055,
-      0.388042
+      0.361842,
+      0.417964,
+      0.385357
      ]
     ],
     "current": [
      "lang",
      "lang"
     ],
-    "buy_hold_cagr": 0.261674
+    "buy_hold_cagr": 0.259293
    },
    "yearly": [
     {
@@ -20946,14 +20958,14 @@
     },
     {
      "year": 2026,
-     "strategy": 0.04381,
-     "buy_hold": -0.178773,
+     "strategy": 0.0336,
+     "buy_hold": -0.186806,
      "partial": true
     }
    ],
    "years_beaten": 2,
    "years_total": 4,
-   "prob_beats": 0.597
+   "prob_beats": 0.5925
   }
  ],
  "search": {
