@@ -1,26 +1,25 @@
-## Krypto-signaler: ny fordeling av porteføljen (2026-10-17)
+## Krypto-signal 2026-11-01: SOL 50 % → 30 %
 
 ```
-Signalene gjelder nå andeler av HELE porteføljen (ikke en egen pott per coin).
+Fordeling basert på døgnslutt 2026-11-01 (00:00 UTC):
 
-Strategien er endret for minst én coin (se under).
+  BTC: 20 % av porteføljen  |  Ingen endring
+    Pris 78,230.55 USD · regel SMA150 ±2 %: 100 % av vekten 30 % (nr. 2 på momentum)
+    • Beregnet andel er 30 %, men endringen fra 20 % er under 20 prosentpoeng. Behold 20 %.
 
-Fordeling basert på døgnslutt 2026-10-17 (00:00 UTC):
+  ETH: 22,5 % av porteføljen  |  Ingen endring
+    Pris 2,272.23 USD · regel Trend × BTC-trend ukentlig: 37,5 % av vekten 20 % (nr. 3 på momentum)
+    • BTC er +2.4% fra sin SMA100 – målet kan endres ved neste sjekk.
+    • Signalet sjekkes bare ved døgnslutt søndag.
+    • Beregnet andel er 7,5 %, men endringen fra 22,5 % er under 20 prosentpoeng. Behold 22,5 %.
 
-→ BTC: 20 % av porteføljen  |  Startfordeling: 20 % av porteføljen
-    Pris 81,378.21 USD · regel SMA150 ±2 %: 100 % av vekten 20 % (nr. 3 på momentum)
-
-→ ETH: 22,5 % av porteføljen  |  Startfordeling: 22,5 % av porteføljen
-    Pris 2,399.68 USD · regel Trend × BTC-trend ukentlig: 75 % av vekten 30 % (nr. 2 på momentum)
-    • BTC er +0.1% fra sin SMA50 – målet kan endres ved neste sjekk.
+→ SOL: 30 % av porteføljen  |  SELG ned til 30 % (fra 50 %)
+    Pris 94.39 USD · regel Trend × ETH-trend (lange snitt) ukentlig: 62,5 % av vekten 50 % (nr. 1 på momentum)
+    • Prisen er +2.8% fra sin SMA300 – målet kan endres ved neste sjekk.
+    • ETH er +2.5% fra sin SMA300 – målet kan endres ved neste sjekk.
     • Signalet sjekkes bare ved døgnslutt søndag.
 
-→ SOL: 50 % av porteføljen  |  Startfordeling: 50 % av porteføljen
-    Pris 103.30 USD · regel Trend × ETH-trend (lange snitt) ukentlig: 100 % av vekten 50 % (nr. 1 på momentum)
-    • Ny strategi for SOL: Trend × ETH-trend (lange snitt) ukentlig.
-    • Signalet sjekkes bare ved døgnslutt søndag.
-
-  Kontanter: 7,5 %
+  Kontanter: 27,5 %
 
 Handle bare de coinene som er markert med →. Små avvik fra prisbevegelser er normalt.
 Dette er regelbaserte signaler, ikke finansiell rådgivning.
