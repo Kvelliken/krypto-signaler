@@ -1,6 +1,6 @@
 {
-  "updated": "2026-11-08 06:34 UTC",
-  "data_date": "2026-11-07",
+  "updated": "2026-11-09 07:02 UTC",
+  "data_date": "2026-11-08",
   "strategies": {
     "BTC": {
       "type": "sma_band",
@@ -25,12 +25,12 @@
   },
   "targets": {
     "BTC": 1.0,
-    "ETH": 0.375,
-    "SOL": 0.625
+    "ETH": 0.0,
+    "SOL": 0.0
   },
   "shares": {
-    "BTC": 0.2,
-    "ETH": 0.225,
-    "SOL": 0.30000000000000004
+    "BTC": 0.5,
+    "ETH": 0.0,
+    "SOL": 0.0
   }
 }
