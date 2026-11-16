@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalshi-sentiment · Krypto-signaler</title>
+<meta name="robots" content="noindex">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --surface-2: #f0efec;
+  --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --ring: rgba(11,11,11,0.10);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;
+  --good: #006300; --bad: #d03b3b; --band: rgba(42,120,214,0.12);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232321;
+    --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+    --good: #0ca30c; --bad: #e66767; --band: rgba(57,135,229,0.16);
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 26px; margin: 0 0 2px; letter-spacing: -0.01em; }
+h2 { font-size: 19px; margin: 40px 0 12px; }
+h3 { font-size: 15px; margin: 0 0 6px; }
+p { margin: 0 0 10px; }
+.sub { color: var(--ink-2); font-size: 14px; }
+.muted { color: var(--muted); }
+.card { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 16px; }
+.banner { margin-top: 18px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--ring);
+  background: var(--surface); font-size: 16px; }
+.banner b { font-weight: 650; }
+.sitenav { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 18px; }
+.sitenav a { font-size: 14px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--ring);
+  background: var(--surface); color: var(--ink); text-decoration: none; }
+.sitenav a[aria-current="page"] { background: var(--ink); color: var(--page); border-color: var(--ink); }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 14px; }
+.big { font-size: 30px; font-weight: 700; line-height: 1.15; margin: 4px 0 2px; font-variant-numeric: tabular-nums; }
+dl.kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 8px 0 0; font-size: 14px; }
+dl.kv dt { color: var(--ink-2); }
+dl.kv dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+.grid2.two { grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); }
+.chart-box { position: relative; height: 260px; margin-top: 8px; }
+.chart-box.short { height: 200px; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); margin: 8px 0 0; }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.legend i.band { height: 10px; background: var(--band); }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap;
+  font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--ink-2); font-weight: 600; font-size: 13px; }
+.pos { color: var(--good); } .neg { color: var(--bad); }
+.method p, .method li { font-size: 14px; color: var(--ink-2); }
+.method ul { padding-left: 20px; margin: 6px 0 10px; }
+details summary { cursor: pointer; color: var(--ink-2); font-size: 14px; margin-top: 8px; }
+footer { margin-top: 48px; font-size: 13px; color: var(--muted); }
+a { color: var(--s1); }
+@media (max-width: 520px) { .big { font-size: 26px; } h1 { font-size: 22px; } }
+</style>
+</head>
+<body>
+<main>
+  <nav class="sitenav" aria-label="Faner">
+    <a href="../">Signaler</a>
+    <a href="./" aria-current="page">Kalshi-sentiment</a>
+  </nav>
+  <header>
+    <h1>Kalshi-sentiment for BTC</h1>
+    <p class="sub" id="subtitle"></p>
+  </header>
+  <div id="banner"></div>
+
+  <section class="cards" id="cards"></section>
+  <p class="sub" style="margin-top:12px">Prisene på Kalshi er sannsynligheter slik markedet setter dem, ikke en prognose.
+    Fanen kjøres av en egen jobb og påvirker ikke signalene på hovedsiden.</p>
+
+  <h2>Fordelingen markedet priser inn</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3 id="wk-title">Slutten av uken</h3>
+      <p class="sub">Sannsynlighet for at BTC er over hver pris. Prikken er dagens pris.</p>
+      <div class="chart-box"><canvas id="wk-chart"></canvas></div>
+    </div>
+    <div class="card">
+      <h3 id="ye-title">Nyttår</h3>
+      <p class="sub">Sannsynlighet per $5 000-intervall. Den mørke søylen inneholder dagens pris.</p>
+      <div class="chart-box"><canvas id="ye-chart"></canvas></div>
+    </div>
+  </div>
+
+  <h2>Vil BTC nå et nivå før fristen?</h2>
+  <p class="sub">«Modell» er sannsynligheten hvis BTC svinger tilfeldig uten retning, med volatiliteten fra ukemarkedet.
+    Markedet over modellen betyr at markedet betaler mer for den bevegelsen enn volatiliteten alene tilsier.</p>
+  <div class="card table-wrap"><table id="touch"></table></div>
+
+  <h2>Utvikling over tid</h2>
+  <div class="grid2 two">
+    <div class="card">
+      <h3>BTC-pris og nyttårsutsikten</h3>
+      <div class="chart-box"><canvas id="h-price"></canvas></div>
+      <div class="legend"><span><i id="lg-spot"></i>BTC-pris</span><span><i id="lg-med"></i>Nyttårsmedian</span><span><i class="band"></i>10–90 % for nyttår</span></div>
+    </div>
+    <div class="card">
+      <h3>Sannsynlighet for høyere pris fredag</h3>
+      <div class="chart-box"><canvas id="h-pup"></canvas></div>
+      <p class="sub" style="margin-top:8px">Over 50 % betyr at markedet heller mot opp.</p>
+    </div>
+    <div class="card">
+      <h3>Skjevhet i nyttårsfordelingen</h3>
+      <div class="chart-box short"><canvas id="h-skew"></canvas></div>
+      <p class="sub" style="margin-top:8px">Under null: lengre hale ned enn opp (målt i prosent fra medianen).</p>
+    </div>
+    <div class="card">
+      <h3>Krakkforsikring: dypeste nivå før nyttår</h3>
+      <div class="chart-box short"><canvas id="h-crash"></canvas></div>
+      <div class="legend"><span><i id="lg-cm"></i>Markedet</span><span><i id="lg-cmod"></i>Modell</span></div>
+    </div>
+  </div>
+
+  <h2>Har ukemarkedet truffet?</h2>
+  <p class="sub" id="eval-sub"></p>
+  <section class="cards" id="eval-cards"></section>
+  <div class="card table-wrap" style="margin-top:14px"><table id="eval-table"></table></div>
+
+  <h2>Metode og forbehold</h2>
+  <div class="card method">
+    <ul>
+      <li><b>BTC-pris</b> er startprisen (CF Benchmarks BRTI) i Kalshis 15-minuttersmarked som pågår ved øyeblikksbildet.</li>
+      <li><b>Ukemarkedet</b> er «BTC over $X fredag kl. 17 ET». Kurven gir fordelingen; median og 10–90 % leses rett av den.
+        Volatiliteten er en lognormal tilpasning til kurven, regnet om til årlig.</li>
+      <li><b>Nyttår</b> er intervallmarkedet for BTC-pris ved årsskiftet. Midtprisene skaleres så summen blir 100 %.
+        Skjevhet = ln(q90/median) − ln(median/q10).</li>
+      <li><b>Berøringsmarkeder</b> betaler ut hvis BTC er innom nivået før fristen. Modellen bruker speilingsprinsippet:
+        2 × P(slutt bortenfor nivået) for en pris uten retning.</li>
+      <li>Et øyeblikksbilde tas hver kveld kl. 23:40 UTC. Historikken før fanen ble satt opp er fylt inn fra Kalshis timescandles
+        for samme klokkeslett.</li>
+      <li>Ukemarkedet evalueres når fasiten er klar. Flere øyeblikksbilder deler samme fredag, så antall uavhengige utfall er antall uker.
+        Med få uker er resultatene svært usikre.</li>
+      <li>En egen analyse (17.09.–16.11.2026) fant at Kalshis korte BTC-markeder er godt kalibrert, med en klassisk longshot-bias,
+        og at ingen enkel strategi slo markedet etter spread og gebyr.</li>
+    </ul>
+  </div>
+
+  <footer>
+    Ikke finansiell rådgivning. <span id="foot-gen"></span>
+    · <a href="snapshots.csv">Rådata (øyeblikksbilder)</a> · <a href="latest.json">Rådata (siste)</a>
+    · <a href="https://github.com/Kvelliken/krypto-signaler/tree/main/kalshi">Kildekode</a>
+  </footer>
+</main>
+
+<script id="payload" type="application/json">{"generated":"2026-11-16 20:15 UTC","latest":{"ts":"2026-11-16T20:15:00Z","spot":64980.65,"week":{"event":"KXBTCD-26NOV2017","close":"2026-11-20T22:00:00Z","curve":[[56500,0.96],[57000,0.955],[57500,0.955],[58000,0.945],[58500,0.945],[59000,0.925],[59500,0.9],[60000,0.895],[60500,0.885],[61000,0.875],[61500,0.845],[62000,0.805],[62500,0.775],[63000,0.725],[63500,0.685],[64000,0.635],[64500,0.575],[65000,0.515],[65500,0.455],[66000,0.385],[66500,0.325],[67000,0.275],[67500,0.235],[68000,0.185],[68500,0.155],[69000,0.125],[69500,0.105],[70000,0.085],[70500,0.075],[71000,0.055],[71500,0.045],[72000,0.035],[72500,0.025],[73000,0.02],[73500,0.02],[74000,0.02],[74500,0.015],[75000,0.015],[75500,0.015],[76000,0.01],[76500,0.01],[77000,0.01],[77500,0.01],[78000,0.01],[78500,0.01],[79000,0.01],[79500,0.01],[80000,0.01],[80500,0.01],[81000,0.01]]},"year":{"event":"KXBTCY-27JAN0100","close":"2027-01-01T05:00:00Z","buckets":[[0,20000,0.0233],[20000,25000,0.0098],[25000,30000,0.0078],[30000,35000,0.0109],[35000,40000,0.0124],[40000,45000,0.0249],[45000,50000,0.0404],[50000,55000,0.0704],[55000,60000,0.1113],[60000,65000,0.1766],[65000,70000,0.1776],[70000,75000,0.1414],[75000,80000,0.0689],[80000,85000,0.0456],[85000,90000,0.0243],[90000,95000,0.0124],[95000,100000,0.0145],[100000,105000,0.0041],[105000,110000,0.0083],[110000,115000,0.0026],[115000,120000,0.0016],[120000,125000,0.0016],[125000,130000,0.0016],[130000,135000,0.0016],[135000,140000,0.0016],[140000,145000,0.0005],[145000,150000,0.0005],[150000,null,0.0036]]},"touch":[{"serie":"KXBTCMINMON","retning":"ned","horisont":"måned","niva":60000,"frist":"2026-12-01","avstand":-0.0766,"marked":0.395,"modell":0.44},{"serie":"KXBTCMINMON","retning":"ned","horisont":"måned","niva":57500,"frist":"2026-12-01","avstand":-0.1151,"marked":0.215,"modell":0.2363},{"serie":"KXBTCMAXMON","retning":"opp","horisont":"måned","niva":82500,"frist":"2026-12-01","avstand":0.2696,"marked":0.025,"modell":0.0208},{"serie":"KXBTCMAXMON","retning":"opp","horisont":"måned","niva":85000,"frist":"2026-12-01","avstand":0.3081,"marked":0.025,"modell":0.0093},{"serie":"KXBTCMAXMON","retning":"opp","horisont":"måned","niva":87500,"frist":"2026-12-01","avstand":0.3466,"marked":0.015,"modell":0.004},{"serie":"KXBTCMAXMON","retning":"opp","horisont":"måned","niva":90000,"frist":"2026-12-01","avstand":0.385,"marked":0.005,"modell":0.0016},{"serie":"KXBTCMAXMON","retning":"opp","horisont":"måned","niva":92500,"frist":"2026-12-01","avstand":0.4235,"marked":0.005,"modell":0.0006},{"serie":"KXBTCMAXMON","retning":"opp","horisont":"måned","niva":95000,"frist":"2026-12-01","avstand":0.462,"marked":0.005,"modell":0.0002},{"serie":"KXBTCMAXMON","retning":"opp","horisont":"måned","niva":97500,"frist":"2026-12-01","avstand":0.5004,"marked":0.005,"modell":0.0001},{"serie":"KXBTCMINY","retning":"ned","horisont":"år","niva":55000,"frist":"2027-01-01","avstand":-0.1536,"marked":0.295,"modell":0.3636},{"serie":"KXBTCMINY","retning":"ned","horisont":"år","niva":50000,"frist":"2027-01-01","avstand":-0.2305,"marked":0.165,"modell":0.1533},{"serie":"KXBTCMINY","retning":"ned","horisont":"år","niva":45000,"frist":"2027-01-01","avstand":-0.3075,"marked":0.105,"modell":0.0453},{"serie":"KXBTCMINY","retning":"ned","horisont":"år","niva":40000,"frist":"2027-01-01","avstand":-0.3844,"marked":0.065,"modell":0.0082},{"serie":"KXBTCMAXY","retning":"opp","horisont":"år","niva":100000,"frist":"2027-01-01","avstand":0.5389,"marked":0.025,"modell":0.0188},{"serie":"KXBTCMAXY","retning":"opp","horisont":"år","niva":110000,"frist":"2027-01-01","avstand":0.6928,"marked":0.02,"modell":0.0041},{"serie":"KXBTCMAXY","retning":"opp","horisont":"år","niva":120000,"frist":"2027-01-01","avstand":0.8467,"marked":0.015,"modell":0.0008},{"serie":"KXBTCMAXY","retning":"opp","horisont":"år","niva":130000,"frist":"2027-01-01","avstand":1.0006,"marked":0.015,"modell":0.0002},{"serie":"KXBTCMAXY","retning":"opp","horisont":"år","niva":140000,"frist":"2027-01-01","avstand":1.1545,"marked":0.01,"modell":0.0},{"serie":"KXBTCMAXY","retning":"opp","horisont":"år","niva":150000,"frist":"2027-01-01","avstand":1.3084,"marked":0.005,"modell":0.0},{"serie":"KXBTCMAXY","retning":"opp","horisont":"år","niva":200000,"frist":"2027-01-01","avstand":2.0778,"marked":0.005,"modell":0.0}]},"history":[{"ts":"2026-09-17T23:40:00Z","date":"2026-09-17","spot":76427.24,"wk_event":"KXBTCD-26SEP1817","wk_close":"2026-09-18T21:00:00Z","wk_days":0.89,"wk_pup":0.4741,"wk_median":76362.0,"wk_q10":74950.0,"wk_q90":77769.0,"wk_up5":0.0075,"wk_dn5":0.01,"vol":0.2838,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":105.2,"ye_pup":0.5161,"ye_median":76978,"ye_q10":56105,"ye_q90":99831,"ye_skew":-0.0563,"mon_dn_level":75000,"mon_dn_p":0.725,"mon_dn_model":0.7266,"crash_level":40000,"crash_p":0.075,"crash_model":0.0,"wk_outcome":81077.63},{"ts":"2026-09-18T23:40:00Z","date":"2026-09-18","spot":80993.8,"wk_event":"KXBTCD-26SEP2517","wk_close":"2026-09-25T21:00:00Z","wk_days":6.89,"wk_pup":0.4956,"wk_median":80950.0,"wk_q10":76583.0,"wk_q90":86650.0,"wk_up5":0.1641,"wk_dn5":0.1216,"vol":0.3495,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":104.2,"ye_pup":0.5036,"ye_median":81129,"ye_q10":60758,"ye_q90":107298,"ye_skew":-0.0096,"mon_dn_level":75000,"mon_dn_p":0.24,"mon_dn_model":0.2283,"crash_level":40000,"crash_p":0.075,"crash_model":0.0002,"wk_outcome":83880.37},{"ts":"2026-09-19T23:40:00Z","date":"2026-09-19","spot":81270.36,"wk_event":"KXBTCD-26SEP2517","wk_close":"2026-09-25T21:00:00Z","wk_days":5.89,"wk_pup":0.4726,"wk_median":81042.0,"wk_q10":77000.0,"wk_q90":85875.0,"wk_up5":0.12,"wk_dn5":0.1103,"vol":0.3308,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":103.2,"ye_pup":0.5048,"ye_median":81445,"ye_q10":61140,"ye_q90":106848,"ye_skew":-0.0153,"mon_dn_level":75000,"mon_dn_p":0.225,"mon_dn_model":0.1653,"crash_level":40000,"crash_p":0.065,"crash_model":0.0001,"wk_outcome":83880.37},{"ts":"2026-09-20T23:40:00Z","date":"2026-09-20","spot":81151.45,"wk_event":"KXBTCD-26SEP2517","wk_close":"2026-09-25T21:00:00Z","wk_days":4.89,"wk_pup":0.5003,"wk_median":81154.0,"wk_q10":77083.0,"wk_q90":85417.0,"wk_up5":0.1125,"wk_dn5":0.1006,"vol":0.3544,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":102.2,"ye_pup":0.485,"ye_median":80582,"ye_q10":58105,"ye_q90":106509,"ye_skew":-0.0481,"mon_dn_level":75000,"mon_dn_p":0.225,"mon_dn_model":0.1828,"crash_level":40000,"crash_p":0.085,"crash_model":0.0002,"wk_outcome":83880.37},{"ts":"2026-09-21T23:40:00Z","date":"2026-09-21","spot":86480.09,"wk_event":"KXBTCD-26SEP2517","wk_close":"2026-09-25T21:00:00Z","wk_days":3.89,"wk_pup":0.4974,"wk_median":86458.0,"wk_q10":82083.0,"wk_q90":90000.0,"wk_up5":0.145,"wk_dn5":0.1044,"vol":0.3877,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":101.2,"ye_pup":0.5095,"ye_median":86852,"ye_q10":66178,"ye_q90":117829,"ye_skew":0.0332,"mon_dn_level":75000,"mon_dn_p":0.09,"mon_dn_model":0.0205,"crash_level":40000,"crash_p":0.055,"crash_model":0.0002,"wk_outcome":83880.37},{"ts":"2026-09-22T23:40:00Z","date":"2026-09-22","spot":86216.13,"wk_event":"KXBTCD-26SEP2517","wk_close":"2026-09-25T21:00:00Z","wk_days":2.89,"wk_pup":0.4854,"wk_median":86125.0,"wk_q10":82350.0,"wk_q90":89750.0,"wk_up5":0.085,"wk_dn5":0.0631,"vol":0.3598,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":100.2,"ye_pup":0.5238,"ye_median":87247,"ye_q10":64695,"ye_q90":117769,"ye_skew":0.0009,"mon_dn_level":75000,"mon_dn_p":0.06,"mon_dn_model":0.0096,"crash_level":40000,"crash_p":0.055,"crash_model":0.0,"wk_outcome":83880.37},{"ts":"2026-09-23T23:40:00Z","date":"2026-09-23","spot":84471.09,"wk_event":"KXBTCD-26SEP2517","wk_close":"2026-09-25T21:00:00Z","wk_days":1.89,"wk_pup":0.5305,"wk_median":84639.0,"wk_q10":81750.0,"wk_q90":87500.0,"wk_up5":0.0553,"wk_dn5":0.045,"vol":0.3755,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":99.2,"ye_pup":0.5234,"ye_median":85471,"ye_q10":61233,"ye_q90":117375,"ye_skew":-0.0163,"mon_dn_level":75000,"mon_dn_p":0.075,"mon_dn_model":0.0239,"crash_level":40000,"crash_p":0.065,"crash_model":0.0001,"wk_outcome":83880.37},{"ts":"2026-09-24T23:40:00Z","date":"2026-09-24","spot":84405.96,"wk_event":"KXBTCD-26SEP2517","wk_close":"2026-09-25T21:00:00Z","wk_days":0.89,"wk_pup":0.4735,"wk_median":84300.0,"wk_q10":82278.0,"wk_q90":86400.0,"wk_up5":0.0137,"wk_dn5":0.02,"vol":0.3851,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":98.2,"ye_pup":0.5218,"ye_median":85327,"ye_q10":62719,"ye_q90":115777,"ye_skew":-0.0026,"mon_dn_level":75000,"mon_dn_p":0.08,"mon_dn_model":0.0183,"crash_level":40000,"crash_p":0.065,"crash_model":0.0002,"wk_outcome":83880.37},{"ts":"2026-09-25T23:40:00Z","date":"2026-09-25","spot":84076.95,"wk_event":"KXBTCD-26OCT0217","wk_close":"2026-10-02T21:00:00Z","wk_days":6.89,"wk_pup":0.4985,"wk_median":84067.0,"wk_q10":79875.0,"wk_q90":88375.0,"wk_up5":0.1038,"wk_dn5":0.0999,"vol":0.2913,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":97.2,"ye_pup":0.5258,"ye_median":85128,"ye_q10":63527,"ye_q90":115389,"ye_skew":0.0115,"mon_dn_level":75000,"mon_dn_p":0.035,"mon_dn_model":0.001,"crash_level":40000,"crash_p":0.065,"crash_model":0.0,"wk_outcome":84445.85},{"ts":"2026-09-26T23:40:00Z","date":"2026-09-26","spot":84353.52,"wk_event":"KXBTCD-26OCT0217","wk_close":"2026-10-02T21:00:00Z","wk_days":5.89,"wk_pup":0.494,"wk_median":84308.0,"wk_q10":80125.0,"wk_q90":88583.0,"wk_up5":0.1007,"wk_dn5":0.1004,"vol":0.3071,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":96.2,"ye_pup":0.5278,"ye_median":85481,"ye_q10":63701,"ye_q90":114941,"ye_skew":0.002,"mon_dn_level":75000,"mon_dn_p":0.02,"mon_dn_model":0.0003,"crash_level":40000,"crash_p":0.065,"crash_model":0.0,"wk_outcome":84445.85},{"ts":"2026-09-27T23:40:00Z","date":"2026-09-27","spot":84390.86,"wk_event":"KXBTCD-26OCT0217","wk_close":"2026-10-02T21:00:00Z","wk_days":4.89,"wk_pup":0.4937,"wk_median":84312.0,"wk_q10":80250.0,"wk_q90":88667.0,"wk_up5":0.1051,"wk_dn5":0.0953,"vol":0.3371,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":95.2,"ye_pup":0.526,"ye_median":85439,"ye_q10":64233,"ye_q90":113769,"ye_skew":0.0011,"mon_dn_level":75000,"mon_dn_p":0.025,"mon_dn_model":0.0002,"crash_level":40000,"crash_p":0.065,"crash_model":0.0,"wk_outcome":84445.85},{"ts":"2026-09-28T23:40:00Z","date":"2026-09-28","spot":83546.39,"wk_event":"KXBTCD-26OCT0217","wk_close":"2026-10-02T21:00:00Z","wk_days":3.89,"wk_pup":0.4894,"wk_median":83469.0,"wk_q10":79750.0,"wk_q90":87625.0,"wk_up5":0.0961,"wk_dn5":0.0811,"vol":0.3392,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":94.2,"ye_pup":0.5037,"ye_median":83688,"ye_q10":62673,"ye_q90":112643,"ye_skew":0.008,"mon_dn_level":75000,"mon_dn_p":0.025,"mon_dn_model":0.0,"crash_level":40000,"crash_p":0.065,"crash_model":0.0,"wk_outcome":84445.85},{"ts":"2026-09-29T23:40:00Z","date":"2026-09-29","spot":83713.91,"wk_event":"KXBTCD-26OCT0217","wk_close":"2026-10-02T21:00:00Z","wk_days":2.89,"wk_pup":0.4758,"wk_median":83562.0,"wk_q10":80417.0,"wk_q90":86929.0,"wk_up5":0.059,"wk_dn5":0.0656,"vol":0.3486,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":93.2,"ye_pup":0.4998,"ye_median":83708,"ye_q10":63161,"ye_q90":111570,"ye_skew":0.0057,"mon_dn_level":75000,"mon_dn_p":0.015,"mon_dn_model":0.0,"crash_level":40000,"crash_p":0.065,"crash_model":0.0,"wk_outcome":84445.85},{"ts":"2026-09-30T23:40:00Z","date":"2026-09-30","spot":83622.59,"wk_event":"KXBTCD-26OCT0217","wk_close":"2026-10-02T21:00:00Z","wk_days":1.89,"wk_pup":0.5229,"wk_median":83750.0,"wk_q10":81107.0,"wk_q90":86450.0,"wk_up5":0.0359,"wk_dn5":0.0338,"vol":0.3476,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":92.2,"ye_pup":0.5277,"ye_median":84718,"ye_q10":63526,"ye_q90":114734,"ye_skew":0.0154,"mon_dn_level":75000,"mon_dn_p":0.005,"mon_dn_model":0.0,"crash_level":40000,"crash_p":0.055,"crash_model":0.0,"wk_outcome":84445.85},{"ts":"2026-10-01T23:40:00Z","date":"2026-10-01","spot":84722.37,"wk_event":"KXBTCD-26OCT0217","wk_close":"2026-10-02T21:00:00Z","wk_days":0.89,"wk_pup":0.4983,"wk_median":84717.0,"wk_q10":82850.0,"wk_q90":86562.0,"wk_up5":0.015,"wk_dn5":0.005,"vol":0.3446,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":91.2,"ye_pup":0.5331,"ye_median":86000,"ye_q10":63467,"ye_q90":117021,"ye_skew":0.0042,"mon_dn_level":80000,"mon_dn_p":0.57,"mon_dn_model":0.5626,"crash_level":40000,"crash_p":0.055,"crash_model":0.0,"wk_outcome":84445.85},{"ts":"2026-10-02T23:40:00Z","date":"2026-10-02","spot":84545.77,"wk_event":"KXBTCD-26OCT0917","wk_close":"2026-10-09T21:00:00Z","wk_days":6.89,"wk_pup":0.4986,"wk_median":84536.0,"wk_q10":80375.0,"wk_q90":89250.0,"wk_up5":0.1241,"wk_dn5":0.0977,"vol":0.2985,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":90.2,"ye_pup":0.5202,"ye_median":85303,"ye_q10":63606,"ye_q90":113936,"ye_skew":-0.0041,"mon_dn_level":80000,"mon_dn_p":0.565,"mon_dn_model":0.5124,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":82429.06},{"ts":"2026-10-03T23:40:00Z","date":"2026-10-03","spot":84733.88,"wk_event":"KXBTCD-26OCT0917","wk_close":"2026-10-09T21:00:00Z","wk_days":5.89,"wk_pup":0.4969,"wk_median":84708.0,"wk_q10":80917.0,"wk_q90":88938.0,"wk_up5":0.0974,"wk_dn5":0.0749,"vol":0.2914,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":89.2,"ye_pup":0.5327,"ye_median":86019,"ye_q10":64804,"ye_q90":113134,"ye_skew":-0.0092,"mon_dn_level":80000,"mon_dn_p":0.545,"mon_dn_model":0.4775,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":82429.06},{"ts":"2026-10-04T23:40:00Z","date":"2026-10-04","spot":86697.4,"wk_event":"KXBTCD-26OCT0917","wk_close":"2026-10-09T21:00:00Z","wk_days":4.89,"wk_pup":0.4653,"wk_median":86375.0,"wk_q10":82083.0,"wk_q90":90875.0,"wk_up5":0.0944,"wk_dn5":0.1168,"vol":0.3457,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":88.2,"ye_pup":0.4887,"ye_median":86223,"ye_q10":63933,"ye_q90":114951,"ye_skew":-0.0115,"mon_dn_level":80000,"mon_dn_p":0.425,"mon_dn_model":0.3939,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":82429.06},{"ts":"2026-10-05T23:40:00Z","date":"2026-10-05","spot":85917.79,"wk_event":"KXBTCD-26OCT0917","wk_close":"2026-10-09T21:00:00Z","wk_days":3.89,"wk_pup":0.5057,"wk_median":85962.0,"wk_q10":82250.0,"wk_q90":89875.0,"wk_up5":0.0865,"wk_dn5":0.0723,"vol":0.3295,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":87.2,"ye_pup":0.5255,"ye_median":86944,"ye_q10":65694,"ye_q90":115635,"ye_skew":0.0049,"mon_dn_level":80000,"mon_dn_p":0.45,"mon_dn_model":0.4185,"crash_level":40000,"crash_p":0.04,"crash_model":0.0,"wk_outcome":82429.06},{"ts":"2026-10-06T23:40:00Z","date":"2026-10-06","spot":85481.41,"wk_event":"KXBTCD-26OCT0917","wk_close":"2026-10-09T21:00:00Z","wk_days":2.89,"wk_pup":0.5083,"wk_median":85529.0,"wk_q10":82562.0,"wk_q90":88750.0,"wk_up5":0.0548,"wk_dn5":0.0433,"vol":0.3148,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":86.2,"ye_pup":0.5297,"ye_median":86612,"ye_q10":65829,"ye_q90":113042,"ye_skew":-0.0081,"mon_dn_level":80000,"mon_dn_p":0.445,"mon_dn_model":0.4227,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":82429.06},{"ts":"2026-10-07T23:40:00Z","date":"2026-10-07","spot":83296.37,"wk_event":"KXBTCD-26OCT0917","wk_close":"2026-10-09T21:00:00Z","wk_days":1.89,"wk_pup":0.4978,"wk_median":83286.0,"wk_q10":80750.0,"wk_q90":85812.0,"wk_up5":0.0362,"wk_dn5":0.0313,"vol":0.3337,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":85.2,"ye_pup":0.5327,"ye_median":84460,"ye_q10":62941,"ye_q90":110976,"ye_skew":-0.0211,"mon_dn_level":80000,"mon_dn_p":0.655,"mon_dn_model":0.6382,"crash_level":40000,"crash_p":0.055,"crash_model":0.0,"wk_outcome":82429.06},{"ts":"2026-10-08T23:40:00Z","date":"2026-10-08","spot":81777.99,"wk_event":"KXBTCD-26OCT0917","wk_close":"2026-10-09T21:00:00Z","wk_days":0.89,"wk_pup":0.5383,"wk_median":81938.0,"wk_q10":79850.0,"wk_q90":83750.0,"wk_up5":0.0113,"wk_dn5":0.0169,"vol":0.3649,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":84.2,"ye_pup":0.5234,"ye_median":82669,"ye_q10":58739,"ye_q90":111622,"ye_skew":-0.0415,"mon_dn_level":80000,"mon_dn_p":0.76,"mon_dn_model":0.811,"crash_level":40000,"crash_p":0.055,"crash_model":0.0,"wk_outcome":82429.06},{"ts":"2026-10-09T23:40:00Z","date":"2026-10-09","spot":82550.92,"wk_event":"KXBTCD-26OCT1617","wk_close":"2026-10-16T21:00:00Z","wk_days":6.89,"wk_pup":0.5089,"wk_median":82625.0,"wk_q10":78125.0,"wk_q90":87000.0,"wk_up5":0.1161,"wk_dn5":0.1119,"vol":0.3058,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":83.2,"ye_pup":0.4906,"ye_median":82185,"ye_q10":59667,"ye_q90":110082,"ye_skew":-0.028,"mon_dn_level":80000,"mon_dn_p":0.68,"mon_dn_model":0.677,"crash_level":40000,"crash_p":0.055,"crash_model":0.0,"wk_outcome":81628.32},{"ts":"2026-10-10T23:40:00Z","date":"2026-10-10","spot":82964.62,"wk_event":"KXBTCD-26OCT1617","wk_close":"2026-10-16T21:00:00Z","wk_days":5.89,"wk_pup":0.5192,"wk_median":83107.0,"wk_q10":78875.0,"wk_q90":87250.0,"wk_up5":0.1082,"wk_dn5":0.0977,"vol":0.3071,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":82.2,"ye_pup":0.5075,"ye_median":83220,"ye_q10":62551,"ye_q90":109336,"ye_skew":-0.0126,"mon_dn_level":80000,"mon_dn_p":0.6,"mon_dn_model":0.6227,"crash_level":40000,"crash_p":0.055,"crash_model":0.0,"wk_outcome":81628.32},{"ts":"2026-10-11T23:40:00Z","date":"2026-10-11","spot":83637.24,"wk_event":"KXBTCD-26OCT1617","wk_close":"2026-10-16T21:00:00Z","wk_days":4.89,"wk_pup":0.5072,"wk_median":83692.0,"wk_q10":79417.0,"wk_q90":87625.0,"wk_up5":0.0922,"wk_dn5":0.1023,"vol":0.3285,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":81.2,"ye_pup":0.5028,"ye_median":83732,"ye_q10":63077,"ye_q90":109385,"ye_skew":-0.016,"mon_dn_level":80000,"mon_dn_p":0.57,"mon_dn_model":0.5647,"crash_level":40000,"crash_p":0.055,"crash_model":0.0,"wk_outcome":81628.32},{"ts":"2026-10-12T23:40:00Z","date":"2026-10-12","spot":81936.96,"wk_event":"KXBTCD-26OCT1617","wk_close":"2026-10-16T21:00:00Z","wk_days":3.89,"wk_pup":0.5351,"wk_median":82312.0,"wk_q10":78682.0,"wk_q90":85917.0,"wk_up5":0.0936,"wk_dn5":0.072,"vol":0.3489,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":80.2,"ye_pup":0.5499,"ye_median":83595,"ye_q10":63753,"ye_q90":109279,"ye_skew":-0.0031,"mon_dn_level":80000,"mon_dn_p":0.665,"mon_dn_model":0.7648,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":81628.32},{"ts":"2026-10-13T23:40:00Z","date":"2026-10-13","spot":83111.61,"wk_event":"KXBTCD-26OCT1617","wk_close":"2026-10-16T21:00:00Z","wk_days":2.89,"wk_pup":0.5871,"wk_median":83656.0,"wk_q10":80125.0,"wk_q90":86750.0,"wk_up5":0.0743,"wk_dn5":0.0541,"vol":0.3373,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":79.2,"ye_pup":0.5147,"ye_median":83623,"ye_q10":62869,"ye_q90":108491,"ye_skew":-0.0249,"mon_dn_level":80000,"mon_dn_p":0.555,"mon_dn_model":0.6121,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":81628.32},{"ts":"2026-10-14T23:40:00Z","date":"2026-10-14","spot":81455.69,"wk_event":"KXBTCD-26OCT1617","wk_close":"2026-10-16T21:00:00Z","wk_days":1.89,"wk_pup":0.543,"wk_median":81694.0,"wk_q10":78583.0,"wk_q90":84583.0,"wk_up5":0.045,"wk_dn5":0.0438,"vol":0.3894,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":78.2,"ye_pup":0.5319,"ye_median":82582,"ye_q10":61592,"ye_q90":108079,"ye_skew":-0.0242,"mon_dn_level":80000,"mon_dn_p":0.755,"mon_dn_model":0.8309,"crash_level":40000,"crash_p":0.055,"crash_model":0.0001,"wk_outcome":81628.32},{"ts":"2026-10-15T23:40:00Z","date":"2026-10-15","spot":82130.03,"wk_event":"KXBTCD-26OCT1617","wk_close":"2026-10-16T21:00:00Z","wk_days":0.89,"wk_pup":0.5886,"wk_median":82446.0,"wk_q10":80542.0,"wk_q90":84292.0,"wk_up5":0.0176,"wk_dn5":0.015,"vol":0.3649,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":77.2,"ye_pup":0.5136,"ye_median":82575,"ye_q10":60803,"ye_q90":107032,"ye_skew":-0.0466,"mon_dn_level":77500,"mon_dn_p":0.345,"mon_dn_model":0.4499,"crash_level":40000,"crash_p":0.05,"crash_model":0.0,"wk_outcome":81628.32},{"ts":"2026-10-16T23:40:00Z","date":"2026-10-16","spot":81556.4,"wk_event":"KXBTCD-26OCT2317","wk_close":"2026-10-23T21:00:00Z","wk_days":6.89,"wk_pup":0.5282,"wk_median":81792.0,"wk_q10":77125.0,"wk_q90":86375.0,"wk_up5":0.1369,"wk_dn5":0.1141,"vol":0.3204,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":76.2,"ye_pup":0.5314,"ye_median":82573,"ye_q10":61210,"ye_q90":105845,"ye_skew":-0.0511,"mon_dn_level":77500,"mon_dn_p":0.425,"mon_dn_model":0.4348,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":81318.96},{"ts":"2026-10-17T23:40:00Z","date":"2026-10-17","spot":81183.22,"wk_event":"KXBTCD-26OCT2317","wk_close":"2026-10-23T21:00:00Z","wk_days":5.89,"wk_pup":0.523,"wk_median":81375.0,"wk_q10":76857.0,"wk_q90":85625.0,"wk_up5":0.1256,"wk_dn5":0.1137,"vol":0.3308,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":75.2,"ye_pup":0.5312,"ye_median":82160,"ye_q10":59594,"ye_q90":106079,"ye_skew":-0.0656,"mon_dn_level":77500,"mon_dn_p":0.45,"mon_dn_model":0.4763,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":81318.96},{"ts":"2026-10-18T23:40:00Z","date":"2026-10-18","spot":82021.72,"wk_event":"KXBTCD-26OCT2317","wk_close":"2026-10-23T21:00:00Z","wk_days":4.89,"wk_pup":0.482,"wk_median":81850.0,"wk_q10":77375.0,"wk_q90":85917.0,"wk_up5":0.0925,"wk_dn5":0.1302,"vol":0.3544,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":74.2,"ye_pup":0.5211,"ye_median":82783,"ye_q10":62253,"ye_q90":104782,"ye_skew":-0.0493,"mon_dn_level":77500,"mon_dn_p":0.435,"mon_dn_model":0.3996,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":81318.96},{"ts":"2026-10-19T23:40:00Z","date":"2026-10-19","spot":81944.34,"wk_event":"KXBTCD-26OCT2317","wk_close":"2026-10-23T21:00:00Z","wk_days":3.89,"wk_pup":0.5139,"wk_median":82036.0,"wk_q10":78583.0,"wk_q90":85750.0,"wk_up5":0.0833,"wk_dn5":0.0719,"vol":0.3295,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":73.2,"ye_pup":0.5324,"ye_median":83046,"ye_q10":61620,"ye_q90":104309,"ye_skew":-0.0704,"mon_dn_level":77500,"mon_dn_p":0.375,"mon_dn_model":0.3541,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":81318.96},{"ts":"2026-10-20T23:40:00Z","date":"2026-10-20","spot":82836.8,"wk_event":"KXBTCD-26OCT2317","wk_close":"2026-10-23T21:00:00Z","wk_days":2.89,"wk_pup":0.5444,"wk_median":83083.0,"wk_q10":80062.0,"wk_q90":86083.0,"wk_up5":0.0559,"wk_dn5":0.0517,"vol":0.3148,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":72.2,"ye_pup":0.5154,"ye_median":83347,"ye_q10":62527,"ye_q90":104346,"ye_skew":-0.0627,"mon_dn_level":77500,"mon_dn_p":0.255,"mon_dn_model":0.2266,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":81318.96},{"ts":"2026-10-21T23:40:00Z","date":"2026-10-21","spot":84259.75,"wk_event":"KXBTCD-26OCT2317","wk_close":"2026-10-23T21:00:00Z","wk_days":1.89,"wk_pup":0.5327,"wk_median":84396.0,"wk_q10":82250.0,"wk_q90":86812.0,"wk_up5":0.0266,"wk_dn5":0.025,"vol":0.292,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":71.2,"ye_pup":0.5089,"ye_median":84562,"ye_q10":64007,"ye_q90":106127,"ye_skew":-0.0513,"mon_dn_level":77500,"mon_dn_p":0.145,"mon_dn_model":0.0863,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":81318.96},{"ts":"2026-10-22T23:40:00Z","date":"2026-10-22","spot":81222.7,"wk_event":"KXBTCD-26OCT2317","wk_close":"2026-10-23T21:00:00Z","wk_days":0.89,"wk_pup":0.5326,"wk_median":81339.0,"wk_q10":79536.0,"wk_q90":83250.0,"wk_up5":0.0122,"wk_dn5":0.015,"vol":0.3649,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":70.2,"ye_pup":0.5548,"ye_median":83125,"ye_q10":63734,"ye_q90":106343,"ye_skew":-0.0193,"mon_dn_level":77500,"mon_dn_p":0.355,"mon_dn_model":0.4174,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":81318.96},{"ts":"2026-10-23T23:40:00Z","date":"2026-10-23","spot":80868.73,"wk_event":"KXBTCD-26OCT3017","wk_close":"2026-10-30T21:00:00Z","wk_days":6.89,"wk_pup":0.5008,"wk_median":80875.0,"wk_q10":76375.0,"wk_q90":85125.0,"wk_up5":0.1085,"wk_dn5":0.1245,"vol":0.3058,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":69.2,"ye_pup":0.5632,"ye_median":82932,"ye_q10":63545,"ye_q90":105913,"ye_skew":-0.0217,"mon_dn_level":77500,"mon_dn_p":0.405,"mon_dn_model":0.3525,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":76772.36},{"ts":"2026-10-24T23:40:00Z","date":"2026-10-24","spot":80516.61,"wk_event":"KXBTCD-26OCT3017","wk_close":"2026-10-30T21:00:00Z","wk_days":5.89,"wk_pup":0.5227,"wk_median":80679.0,"wk_q10":76125.0,"wk_q90":84875.0,"wk_up5":0.1133,"wk_dn5":0.1146,"vol":0.3308,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":68.2,"ye_pup":0.5509,"ye_median":82169,"ye_q10":64387,"ye_q90":103170,"ye_skew":-0.0163,"mon_dn_level":77500,"mon_dn_p":0.42,"mon_dn_model":0.4103,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":76772.36},{"ts":"2026-10-25T23:40:00Z","date":"2026-10-25","spot":79980.58,"wk_event":"KXBTCD-26OCT3017","wk_close":"2026-10-30T21:00:00Z","wk_days":4.89,"wk_pup":0.5777,"wk_median":80607.0,"wk_q10":76417.0,"wk_q90":84875.0,"wk_up5":0.137,"wk_dn5":0.075,"vol":0.3544,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":67.2,"ye_pup":0.5933,"ye_median":82856,"ye_q10":65234,"ye_q90":103247,"ye_skew":-0.0191,"mon_dn_level":77500,"mon_dn_p":0.395,"mon_dn_model":0.4943,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":76772.36},{"ts":"2026-10-26T23:40:00Z","date":"2026-10-26","spot":79931.32,"wk_event":"KXBTCD-26OCT3017","wk_close":"2026-10-30T21:00:00Z","wk_days":3.89,"wk_pup":0.5146,"wk_median":80031.0,"wk_q10":75917.0,"wk_q90":83917.0,"wk_up5":0.0993,"wk_dn5":0.1011,"vol":0.3683,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":66.2,"ye_pup":0.5761,"ye_median":82292,"ye_q10":64433,"ye_q90":102831,"ye_skew":-0.0218,"mon_dn_level":77500,"mon_dn_p":0.45,"mon_dn_model":0.4813,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":76772.36},{"ts":"2026-10-27T23:40:00Z","date":"2026-10-27","spot":80817.71,"wk_event":"KXBTCD-26OCT3017","wk_close":"2026-10-30T21:00:00Z","wk_days":2.89,"wk_pup":0.4978,"wk_median":80806.0,"wk_q10":77417.0,"wk_q90":84250.0,"wk_up5":0.0778,"wk_dn5":0.0661,"vol":0.3711,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":65.2,"ye_pup":0.5281,"ye_median":81667,"ye_q10":60224,"ye_q90":101000,"ye_skew":-0.0921,"mon_dn_level":77500,"mon_dn_p":0.24,"mon_dn_model":0.2911,"crash_level":40000,"crash_p":0.055,"crash_model":0.0,"wk_outcome":76772.36},{"ts":"2026-10-28T23:40:00Z","date":"2026-10-28","spot":81251.26,"wk_event":"KXBTCD-26OCT3017","wk_close":"2026-10-30T21:00:00Z","wk_days":1.89,"wk_pup":0.4897,"wk_median":81205.0,"wk_q10":78812.0,"wk_q90":83812.0,"wk_up5":0.0306,"wk_dn5":0.025,"vol":0.3337,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":64.2,"ye_pup":0.5462,"ye_median":82746,"ye_q10":62659,"ye_q90":104318,"ye_skew":-0.0464,"mon_dn_level":77500,"mon_dn_p":0.1,"mon_dn_model":0.129,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":76772.36},{"ts":"2026-10-29T23:40:00Z","date":"2026-10-29","spot":78577.11,"wk_event":"KXBTCD-26OCT3017","wk_close":"2026-10-30T21:00:00Z","wk_days":0.89,"wk_pup":0.5796,"wk_median":78975.0,"wk_q10":75750.0,"wk_q90":81786.0,"wk_up5":0.0548,"wk_dn5":0.058,"vol":0.5879,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":63.2,"ye_pup":0.6263,"ye_median":82561,"ye_q10":62148,"ye_q90":103487,"ye_skew":-0.0581,"mon_dn_level":77500,"mon_dn_p":0.55,"mon_dn_model":0.7612,"crash_level":40000,"crash_p":0.035,"crash_model":0.0058,"wk_outcome":76772.36},{"ts":"2026-10-30T23:40:00Z","date":"2026-10-30","spot":77018.89,"wk_event":"KXBTCD-26NOV0617","wk_close":"2026-11-06T22:00:00Z","wk_days":6.93,"wk_pup":0.4931,"wk_median":76958.0,"wk_q10":70875.0,"wk_q90":82625.0,"wk_up5":0.1828,"wk_dn5":0.2051,"vol":0.4356,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":62.2,"ye_pup":0.5357,"ye_median":78075,"ye_q10":58898,"ye_q90":98693,"ye_skew":-0.0475,"mon_dn_level":75000,"mon_dn_p":0.15,"mon_dn_model":0.2835,"crash_level":40000,"crash_p":0.045,"crash_model":0.0003,"wk_outcome":75812.99},{"ts":"2026-10-31T23:40:00Z","date":"2026-10-31","spot":77405.74,"wk_event":"KXBTCD-26NOV0617","wk_close":"2026-11-06T22:00:00Z","wk_days":5.93,"wk_pup":0.5244,"wk_median":77650.0,"wk_q10":72250.0,"wk_q90":82875.0,"wk_up5":0.1784,"wk_dn5":0.1571,"vol":0.4238,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":61.2,"ye_pup":0.5499,"ye_median":78795,"ye_q10":61528,"ye_q90":98042,"ye_skew":-0.0288,"mon_dn_level":75000,"mon_dn_p":0.02,"mon_dn_model":0.0008,"crash_level":40000,"crash_p":0.05,"crash_model":0.0001,"wk_outcome":75812.99},{"ts":"2026-11-01T23:40:00Z","date":"2026-11-01","spot":77960.81,"wk_event":"KXBTCD-26NOV0617","wk_close":"2026-11-06T22:00:00Z","wk_days":4.93,"wk_pup":0.4989,"wk_median":77950.0,"wk_q10":72625.0,"wk_q90":82875.0,"wk_up5":0.1435,"wk_dn5":0.1688,"vol":0.4476,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":60.2,"ye_pup":0.5635,"ye_median":79699,"ye_q10":63096,"ye_q90":98789,"ye_skew":-0.0189,"mon_dn_level":75000,"mon_dn_p":0.715,"mon_dn_model":0.7597,"crash_level":40000,"crash_p":0.05,"crash_model":0.0002,"wk_outcome":75812.99},{"ts":"2026-11-02T23:40:00Z","date":"2026-11-02","spot":76615.05,"wk_event":"KXBTCD-26NOV0617","wk_close":"2026-11-06T22:00:00Z","wk_days":3.93,"wk_pup":0.5312,"wk_median":76875.0,"wk_q10":72250.0,"wk_q90":81417.0,"wk_up5":0.1483,"wk_dn5":0.1221,"vol":0.4531,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":59.2,"ye_pup":0.5742,"ye_median":78932,"ye_q10":60000,"ye_q90":98960,"ye_skew":-0.0481,"mon_dn_level":75000,"mon_dn_p":0.815,"mon_dn_model":0.8657,"crash_level":40000,"crash_p":0.045,"crash_model":0.0004,"wk_outcome":75812.99},{"ts":"2026-11-03T23:40:00Z","date":"2026-11-03","spot":77829.72,"wk_event":"KXBTCD-26NOV0617","wk_close":"2026-11-06T22:00:00Z","wk_days":2.93,"wk_pup":0.4988,"wk_median":77821.0,"wk_q10":73750.0,"wk_q90":81875.0,"wk_up5":0.1062,"wk_dn5":0.1113,"vol":0.4466,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":58.2,"ye_pup":0.543,"ye_median":79119,"ye_q10":60344,"ye_q90":99455,"ye_skew":-0.0421,"mon_dn_level":75000,"mon_dn_p":0.715,"mon_dn_model":0.7613,"crash_level":40000,"crash_p":0.045,"crash_model":0.0002,"wk_outcome":75812.99},{"ts":"2026-11-04T23:40:00Z","date":"2026-11-04","spot":80428.06,"wk_event":"KXBTCD-26NOV0617","wk_close":"2026-11-06T22:00:00Z","wk_days":1.93,"wk_pup":0.5479,"wk_median":80694.0,"wk_q10":77350.0,"wk_q90":83750.0,"wk_up5":0.067,"wk_dn5":0.0431,"vol":0.4126,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":57.2,"ye_pup":0.5616,"ye_median":82122,"ye_q10":65709,"ye_q90":98799,"ye_skew":-0.0381,"mon_dn_level":75000,"mon_dn_p":0.48,"mon_dn_model":0.5274,"crash_level":40000,"crash_p":0.025,"crash_model":0.0,"wk_outcome":75812.99},{"ts":"2026-11-05T23:40:00Z","date":"2026-11-05","spot":75782.09,"wk_event":"KXBTCD-26NOV0617","wk_close":"2026-11-06T22:00:00Z","wk_days":0.93,"wk_pup":0.4842,"wk_median":75694.0,"wk_q10":72688.0,"wk_q90":78438.0,"wk_up5":0.0436,"wk_dn5":0.0647,"vol":0.5745,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":56.2,"ye_pup":0.5908,"ye_median":78428,"ye_q10":59241,"ye_q90":97773,"ye_skew":-0.0601,"mon_dn_level":75000,"mon_dn_p":0.94,"mon_dn_model":0.9452,"crash_level":40000,"crash_p":0.06,"crash_model":0.0046,"wk_outcome":75812.99},{"ts":"2026-11-06T23:40:00Z","date":"2026-11-06","spot":75820.33,"wk_event":"KXBTCD-26NOV1317","wk_close":"2026-11-13T22:00:00Z","wk_days":6.93,"wk_pup":0.5266,"wk_median":76042.0,"wk_q10":70875.0,"wk_q90":80875.0,"wk_up5":0.1683,"wk_dn5":0.1473,"vol":0.3702,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":55.2,"ye_pup":0.5521,"ye_median":77357,"ye_q10":58957,"ye_q90":96815,"ye_skew":-0.0473,"mon_dn_level":72500,"mon_dn_p":0.64,"mon_dn_model":0.6386,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":68332.67},{"ts":"2026-11-07T23:40:00Z","date":"2026-11-07","spot":75678.19,"wk_event":"KXBTCD-26NOV1317","wk_close":"2026-11-13T22:00:00Z","wk_days":5.93,"wk_pup":0.5072,"wk_median":75750.0,"wk_q10":70625.0,"wk_q90":80625.0,"wk_up5":0.1573,"wk_dn5":0.1565,"vol":0.3924,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":54.2,"ye_pup":0.5476,"ye_median":76999,"ye_q10":62040,"ye_q90":95916,"ye_skew":0.0037,"mon_dn_level":72500,"mon_dn_p":0.645,"mon_dn_model":0.6646,"crash_level":40000,"crash_p":0.055,"crash_model":0.0,"wk_outcome":68332.67},{"ts":"2026-11-08T23:40:00Z","date":"2026-11-08","spot":75313.4,"wk_event":"KXBTCD-26NOV1317","wk_close":"2026-11-13T22:00:00Z","wk_days":4.93,"wk_pup":0.4137,"wk_median":74607.0,"wk_q10":69583.0,"wk_q90":79375.0,"wk_up5":0.1118,"wk_dn5":0.2088,"vol":0.439,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":53.2,"ye_pup":0.5523,"ye_median":76627,"ye_q10":60780,"ye_q90":95348,"ye_skew":-0.0131,"mon_dn_level":72500,"mon_dn_p":0.77,"mon_dn_model":0.7251,"crash_level":40000,"crash_p":0.045,"crash_model":0.0002,"wk_outcome":68332.67},{"ts":"2026-11-09T23:40:00Z","date":"2026-11-09","spot":75190.7,"wk_event":"KXBTCD-26NOV1317","wk_close":"2026-11-13T22:00:00Z","wk_days":3.93,"wk_pup":0.5083,"wk_median":75250.0,"wk_q10":71083.0,"wk_q90":79250.0,"wk_up5":0.117,"wk_dn5":0.1209,"vol":0.4145,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":52.2,"ye_pup":0.5287,"ye_median":75980,"ye_q10":60540,"ye_q90":96493,"ye_skew":0.0118,"mon_dn_level":72500,"mon_dn_p":0.67,"mon_dn_model":0.7153,"crash_level":40000,"crash_p":0.045,"crash_model":0.0001,"wk_outcome":68332.67},{"ts":"2026-11-10T23:40:00Z","date":"2026-11-10","spot":73567.27,"wk_event":"KXBTCD-26NOV1317","wk_close":"2026-11-13T22:00:00Z","wk_days":2.93,"wk_pup":0.5242,"wk_median":73719.0,"wk_q10":70125.0,"wk_q90":77083.0,"wk_up5":0.0903,"wk_dn5":0.0906,"vol":0.4019,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":51.2,"ye_pup":0.5323,"ye_median":74416,"ye_q10":58950,"ye_q90":93253,"ye_skew":-0.0073,"mon_dn_level":72500,"mon_dn_p":0.85,"mon_dn_model":0.8772,"crash_level":40000,"crash_p":0.045,"crash_model":0.0001,"wk_outcome":68332.67},{"ts":"2026-11-11T23:40:00Z","date":"2026-11-11","spot":73687.01,"wk_event":"KXBTCD-26NOV1317","wk_close":"2026-11-13T22:00:00Z","wk_days":1.93,"wk_pup":0.5413,"wk_median":73917.0,"wk_q10":71188.0,"wk_q90":76583.0,"wk_up5":0.0527,"wk_dn5":0.0451,"vol":0.3851,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":50.2,"ye_pup":0.543,"ye_median":74752,"ye_q10":60690,"ye_q90":91637,"ye_skew":-0.0047,"mon_dn_level":72500,"mon_dn_p":0.82,"mon_dn_model":0.8542,"crash_level":40000,"crash_p":0.045,"crash_model":0.0,"wk_outcome":68332.67},{"ts":"2026-11-12T23:40:00Z","date":"2026-11-12","spot":71275.99,"wk_event":"KXBTCD-26NOV1317","wk_close":"2026-11-13T22:00:00Z","wk_days":0.93,"wk_pup":0.5377,"wk_median":71411.0,"wk_q10":69188.0,"wk_q90":73393.0,"wk_up5":0.0248,"wk_dn5":0.0292,"vol":0.4557,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":49.2,"ye_pup":0.5367,"ye_median":72144,"ye_q10":59300,"ye_q90":89512,"ye_skew":0.0197,"mon_dn_level":70000,"mon_dn_p":0.775,"mon_dn_model":0.8591,"crash_level":40000,"crash_p":0.045,"crash_model":0.0006,"wk_outcome":68332.67},{"ts":"2026-11-13T23:40:00Z","date":"2026-11-13","spot":68082.8,"wk_event":"KXBTCD-26NOV2017","wk_close":"2026-11-20T22:00:00Z","wk_days":6.93,"wk_pup":0.5267,"wk_median":68350.0,"wk_q10":63625.0,"wk_q90":72900.0,"wk_up5":0.176,"wk_dn5":0.1557,"vol":0.3775,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":48.2,"ye_pup":0.54,"ye_median":69065,"ye_q10":55480,"ye_q90":85754,"ye_skew":-0.0026,"mon_dn_level":67500,"mon_dn_p":0.86,"mon_dn_model":0.9165,"crash_level":40000,"crash_p":0.055,"crash_model":0.0001,"wk_outcome":null},{"ts":"2026-11-14T23:40:00Z","date":"2026-11-14","spot":63713.28,"wk_event":"KXBTCD-26NOV2017","wk_close":"2026-11-20T22:00:00Z","wk_days":5.93,"wk_pup":0.5251,"wk_median":63893.0,"wk_q10":56875.0,"wk_q90":70125.0,"wk_up5":0.2511,"wk_dn5":0.2667,"vol":0.6121,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":47.2,"ye_pup":0.5569,"ye_median":65225,"ye_q10":46466,"ye_q90":83162,"ye_skew":-0.0962,"mon_dn_level":62500,"mon_dn_p":0.845,"mon_dn_model":0.8815,"crash_level":40000,"crash_p":0.075,"crash_model":0.0344,"wk_outcome":null},{"ts":"2026-11-15T23:40:00Z","date":"2026-11-15","spot":65083.42,"wk_event":"KXBTCD-26NOV2017","wk_close":"2026-11-20T22:00:00Z","wk_days":4.93,"wk_pup":0.555,"wk_median":65550.0,"wk_q10":59625.0,"wk_q90":70750.0,"wk_up5":0.2347,"wk_dn5":0.1948,"vol":0.5594,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":46.2,"ye_pup":0.5406,"ye_median":66112,"ye_q10":51201,"ye_q90":81833,"ye_skew":-0.0423,"mon_dn_level":60000,"mon_dn_p":0.375,"mon_dn_model":0.4764,"crash_level":40000,"crash_p":0.065,"crash_model":0.0144,"wk_outcome":null},{"ts":"2026-11-16T20:15:00Z","date":"2026-11-16","spot":64980.65,"wk_event":"KXBTCD-26NOV2017","wk_close":"2026-11-20T22:00:00Z","wk_days":4.07,"wk_pup":0.5173,"wk_median":65125.0,"wk_q10":59500.0,"wk_q90":69625.0,"wk_up5":0.1712,"wk_dn5":0.1735,"vol":0.5208,"ye_event":"KXBTCY-27JAN0100","ye_close":"2027-01-01T05:00:00Z","ye_days":45.4,"ye_pup":0.5129,"ye_median":65343,"ye_q10":46353,"ye_q90":82665,"ye_skew":-0.1082,"mon_dn_level":60000,"mon_dn_p":0.395,"mon_dn_model":0.44,"crash_level":40000,"crash_p":0.065,"crash_model":0.0082,"wk_outcome":null}],"evaluation":{"n":57,"events":9,"share_up":0.2631578947368421,"avg_pup":0.5119157894736842,"brier":0.261665132631579,"brier_flat":0.25,"skill":-0.04666053052631591,"coverage80":0.7719298245614035,"n_hi":33,"up_when_hi":0.18181818181818182,"n_lo":24,"up_when_lo":0.375}}</script>
+<script>
+const D = JSON.parse(document.getElementById('payload').textContent);
+const L = D.latest || {}, H = D.history || [], E = D.evaluation || {};
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const nf = (x, d = 0) => x == null ? '–' : Number(x).toLocaleString('nb-NO', { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = (x, d = 0) => x == null ? '–' : nf(x * 100, d) + ' %';
+const spct = (x, d = 0) => x == null ? '–' : (x > 0 ? '+' : '') + nf(x * 100, d) + ' %';
+const usd = x => x == null ? '–' : nf(x, 0) + ' $';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const dnorm = s => s ? s.slice(8, 10) + '.' + s.slice(5, 7) + '.' : '–';
+const last = H.length ? H[H.length - 1] : {};
+Chart.defaults.font.family = 'system-ui, -apple-system, "Segoe UI", sans-serif';
+Chart.defaults.color = css('--ink-2');
+Chart.defaults.borderColor = css('--grid');
+const grid = { color: css('--grid') };
+
+// ---------- Topp ----------
+document.getElementById('subtitle').textContent = H.length
+  ? `Øyeblikksbilde ${last.ts.replace('T', ' ').replace(':00Z', ' UTC')} · BTC ${usd(last.spot)}`
+  : 'Ingen data ennå';
+document.getElementById('foot-gen').textContent = `Siden bygget ${D.generated}.`;
+
+function leaning(p) { return p == null ? 'ukjent' : p >= 0.55 ? 'heller mot opp' : p <= 0.45 ? 'heller mot ned' : 'er nøytralt'; }
+if (H.length) {
+  const skew = last.ye_skew == null ? '' : last.ye_skew < -0.05 ? ' Nyttårsfordelingen har tydelig lengst hale ned.'
+    : last.ye_skew > 0.05 ? ' Nyttårsfordelingen har lengst hale opp.' : ' Nyttårsfordelingen er omtrent symmetrisk.';
+  document.getElementById('banner').innerHTML = `<div class="banner"><b>Uken ${leaning(last.wk_pup)}:</b> `
+    + `${pct(last.wk_pup)} sjanse for høyere pris fredag ${dnorm(last.wk_close)}${skew}</div>`;
+}
+
+// ---------- Kort ----------
+const card = (title, big, rows, note = '') => `<div class="card"><h3>${title}</h3><div class="big">${big}</div>
+  <dl class="kv">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>${note ? `<p class="sub" style="margin:8px 0 0">${note}</p>` : ''}</div>`;
+const cards = [];
+if (last.wk_event) cards.push(card(`Høyere fredag ${dnorm(last.wk_close)}`, pct(last.wk_pup), [
+  ['Median', usd(last.wk_median)], ['80 % intervall', `${usd(last.wk_q10)} – ${usd(last.wk_q90)}`],
+  ['Opp 5 % eller mer', pct(last.wk_up5)], ['Ned 5 % eller mer', pct(last.wk_dn5)], ['Årlig volatilitet', pct(last.vol)]]));
+if (last.ye_event) cards.push(card('Høyere ved nyttår', pct(last.ye_pup), [
+  ['Median', usd(last.ye_median)], ['80 % intervall', `${usd(last.ye_q10)} – ${usd(last.ye_q90)}`],
+  ['Skjevhet', nf(last.ye_skew, 2)]]));
+if (last.mon_dn_level) cards.push(card(`Under ${usd(last.mon_dn_level)} før månedsslutt`, pct(last.mon_dn_p), [
+  ['Modell uten retning', pct(last.mon_dn_model)], ['Avstand', spct(last.mon_dn_level / last.spot - 1)]],
+  'Nærmeste nivå under dagens pris.'));
+if (last.crash_level) cards.push(card(`Under ${usd(last.crash_level)} før nyttår`, pct(last.crash_p, 1), [
+  ['Modell uten retning', pct(last.crash_model, 1)], ['Avstand', spct(last.crash_level / last.spot - 1)]],
+  'Dypeste nivå Kalshi tilbyr: hva markedet betaler for krakkforsikring.'));
+document.getElementById('cards').innerHTML = cards.join('');
+
+// ---------- Fordelinger ----------
+if (L.week) {
+  document.getElementById('wk-title').textContent = `Fredag ${dnorm(L.week.close)} kl. 17 ET`;
+  const pts = L.week.curve.map(([k, p]) => ({ x: k, y: p }));
+  const spotP = (() => { const c = L.week.curve; for (let i = 1; i < c.length; i++) if (c[i][0] >= L.spot)
+    return c[i - 1][1] + (c[i][1] - c[i - 1][1]) * (L.spot - c[i - 1][0]) / (c[i][0] - c[i - 1][0]); return null; })();
+  new Chart(document.getElementById('wk-chart'), {
+    type: 'scatter',
+    data: { datasets: [
+      { label: 'P(over)', data: pts, showLine: true, borderColor: css('--s1'), pointRadius: 0, borderWidth: 2 },
+      { label: 'I dag', data: spotP == null ? [] : [{ x: L.spot, y: spotP }], pointRadius: 5, backgroundColor: css('--s2') },
+    ] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false },
+      tooltip: { callbacks: { label: c => `${usd(c.parsed.x)}: ${pct(c.parsed.y)}` } } },
+      scales: { x: { type: 'linear', grid, ticks: { callback: v => nf(v / 1000) + 'k' } },
+        y: { min: 0, max: 1, grid, ticks: { callback: v => pct(v) } } } },
+  });
+}
+if (L.year) {
+  document.getElementById('ye-title').textContent = `Nyttår (${dnorm(L.year.close)})`;
+  const b = L.year.buckets.filter(([lo, hi]) => hi != null && lo >= 20000 && hi <= 150001);
+  new Chart(document.getElementById('ye-chart'), {
+    type: 'bar',
+    data: { labels: b.map(([lo]) => nf(lo / 1000) + 'k'),
+      datasets: [{ data: b.map(x => x[2]), borderRadius: 3,
+        backgroundColor: b.map(([lo, hi]) => L.spot >= lo && L.spot < hi ? css('--s2') : css('--s1')) }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false },
+      tooltip: { callbacks: { title: c => { const [lo, hi] = b[c[0].dataIndex]; return `${usd(lo)} – ${usd(hi)}`; },
+        label: c => pct(c.parsed.y, 1) } } },
+      scales: { x: { grid: { display: false }, ticks: { autoSkip: true, maxRotation: 0 } },
+        y: { grid, ticks: { callback: v => pct(v) } } } },
+  });
+}
+
+// ---------- Berøring ----------
+(() => {
+  const t = document.getElementById('touch');
+  const rows = (L.touch || []).filter(r => r.marked >= 0.01 || (r.modell ?? 0) >= 0.01);
+  if (!rows.length) { t.innerHTML = '<tr><td>Ingen åpne berøringsmarkeder.</td></tr>'; return; }
+  t.innerHTML = '<thead><tr><th>Marked</th><th>Frist</th><th>Avstand</th><th>Markedet</th><th>Modell</th><th>Forskjell</th></tr></thead><tbody>'
+    + rows.map(r => { const d = r.modell == null ? null : r.marked - r.modell;
+      return `<tr><td>${r.retning === 'ned' ? 'Under' : 'Over'} ${usd(r.niva)}</td><td>${dnorm(r.frist)}</td><td>${spct(r.avstand)}</td>
+        <td>${pct(r.marked, 1)}</td><td>${pct(r.modell, 1)}</td>
+        <td class="${d == null ? '' : d > 0 ? 'neg' : 'pos'}">${d == null ? '–' : (d > 0 ? '+' : '') + nf(d * 100, 1) + ' pp'}</td></tr>`; }).join('')
+    + '</tbody>';
+})();
+
+// ---------- Historikk ----------
+const labels = H.map(r => dnorm(r.date));
+const line = (label, key, color, extra = {}) => ({ label, data: H.map(r => r[key]), borderColor: color, backgroundColor: color,
+  pointRadius: 0, borderWidth: 2, spanGaps: true, tension: 0, ...extra });
+const base = (yfmt, extra = {}) => ({ maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+  plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${yfmt(c.parsed.y)}` } } },
+  scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 8, maxRotation: 0 } }, y: { grid, ticks: { callback: yfmt }, ...extra } } });
+document.getElementById('lg-spot').style.background = css('--s2');
+document.getElementById('lg-med').style.background = css('--s1');
+document.getElementById('lg-cm').style.background = css('--s2');
+document.getElementById('lg-cmod').style.background = css('--muted');
+if (H.length) {
+  new Chart(document.getElementById('h-price'), { type: 'line', data: { labels, datasets: [
+    line('10 %', 'ye_q10', 'transparent', { fill: false, borderWidth: 0 }),
+    line('90 %', 'ye_q90', 'transparent', { fill: '-1', backgroundColor: css('--band'), borderWidth: 0 }),
+    line('Nyttårsmedian', 'ye_median', css('--s1')),
+    line('BTC', 'spot', css('--s2')),
+  ] }, options: base(v => nf(v / 1000) + 'k') });
+  new Chart(document.getElementById('h-pup'), { type: 'line', data: { labels, datasets: [
+    line('P(høyere fredag)', 'wk_pup', css('--s1')),
+    { label: '50 %', data: H.map(() => 0.5), borderColor: css('--axis'), borderDash: [4, 4], pointRadius: 0, borderWidth: 1 },
+  ] }, options: base(v => pct(v), { suggestedMin: 0.35, suggestedMax: 0.65 }) });
+  new Chart(document.getElementById('h-skew'), { type: 'line', data: { labels, datasets: [
+    line('Skjevhet', 'ye_skew', css('--s1')),
+    { label: '0', data: H.map(() => 0), borderColor: css('--axis'), borderDash: [4, 4], pointRadius: 0, borderWidth: 1 },
+  ] }, options: base(v => nf(v, 2)) });
+  new Chart(document.getElementById('h-crash'), { type: 'line', data: { labels, datasets: [
+    line('Markedet', 'crash_p', css('--s2')),
+    line('Modell', 'crash_model', css('--muted')),
+  ] }, options: base(v => pct(v, 1), { min: 0 }) });
+}
+
+// ---------- Evaluering ----------
+(() => {
+  const sub = document.getElementById('eval-sub');
+  if (!E.n) { sub.textContent = 'Ingen ukemarkeder er avgjort ennå.'; return; }
+  sub.textContent = `${E.n} øyeblikksbilder fordelt på ${E.events} fredager med kjent fasit. Brier-score måler treffsikkerhet (lavere er bedre); en mynt som alltid sier 50 % får 0,25.`;
+  document.getElementById('eval-cards').innerHTML = [
+    card('Brier-score', nf(E.brier, 3), [['Mynt (50 %)', nf(E.brier_flat, 3)], ['Skill mot mynt', nf(E.skill, 2)]],
+      E.skill > 0 ? 'Bedre enn mynt.' : 'Ikke bedre enn mynt.'),
+    card('Treff i 80 %-intervallet', pct(E.coverage80), [['Forventet', '80 %']],
+      'Hvor ofte fredagsprisen havnet mellom 10 %- og 90 %-kvantilen.'),
+    card('Når markedet hellet mot opp', pct(E.up_when_hi), [['Antall', nf(E.n_hi)], ['Gikk opp når det hellet ned', pct(E.up_when_lo)], ['Antall', nf(E.n_lo)]],
+      'Andel øyeblikksbilder der BTC faktisk endte høyere fredag.'),
+  ].join('');
+  const rows = H.filter(r => r.wk_outcome != null).slice(-21).reverse();
+  document.getElementById('eval-table').innerHTML = '<thead><tr><th>Dato</th><th>Fredag</th><th>BTC da</th><th>P(høyere)</th><th>80 % intervall</th><th>Fasit</th><th>Endring</th></tr></thead><tbody>'
+    + rows.map(r => { const ch = r.wk_outcome / r.spot - 1;
+      return `<tr><td>${dnorm(r.date)}</td><td>${dnorm(r.wk_close)}</td><td>${usd(r.spot)}</td><td>${pct(r.wk_pup)}</td>
+        <td>${usd(r.wk_q10)} – ${usd(r.wk_q90)}</td><td>${usd(r.wk_outcome)}</td><td class="${ch >= 0 ? 'pos' : 'neg'}">${spct(ch, 1)}</td></tr>`; }).join('')
+    + '</tbody>';
+})();
+</script>
+</body>
+</html>

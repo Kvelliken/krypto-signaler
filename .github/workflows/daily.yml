@@ -95,6 +95,15 @@ jobs:
           TITLE: ${{ steps.main.outputs.alert_title }}
         run: gh issue create --title "$TITLE" --body-file state/last_alert.md
 
+      - name: Legg til Kalshi-fanen
+        # Siden lages av den egne jobben «Kalshi-sentiment» (kalshi.yml). Her kopieres
+        # den bare inn. Mangler den, publiseres resten av siden som før.
+        run: |
+          git pull --ff-only --quiet || true
+          if [ -f kalshi/public/index.html ]; then
+            mkdir -p site/kalshi && cp -r kalshi/public/. site/kalshi/
+          fi
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3

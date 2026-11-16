@@ -123,10 +123,18 @@ a { color: var(--s1); }
 .alloc-input input { font: inherit; font-size: 15px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--axis);
   background: var(--surface); color: var(--ink); width: 180px; font-variant-numeric: tabular-nums; }
 .share-line { color: var(--ink-2); font-size: 13.5px; margin-top: 2px; }
+.sitenav { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 18px; }
+.sitenav a { font-size: 14px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--ring);
+  background: var(--surface); color: var(--ink); text-decoration: none; }
+.sitenav a[aria-current="page"] { background: var(--ink); color: var(--page); border-color: var(--ink); }
 </style>
 </head>
 <body>
 <main>
+  <nav class="sitenav" aria-label="Faner">
+    <a href="./" aria-current="page">Signaler</a>
+    <a href="kalshi/">Kalshi-sentiment</a>
+  </nav>
   <header>
     <h1>Krypto-signaler</h1>
     <p class="sub" id="subtitle"></p>

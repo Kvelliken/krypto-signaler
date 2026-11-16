@@ -85,3 +85,29 @@ python -m ksig build           # bygg siden i site/ uten å varsle
 | `data/` | Døgnpriser (oppdateres automatisk) |
 | `state/` | Siste varslede posisjoner og signallogg |
 | `results/` | Siste backtest-resultater |
+| `kalshi/` | Kalshi-sentiment (egen fane, se under) |
+
+## Kalshi-sentiment (egen fane)
+
+Fanen **Kalshi-sentiment** (`/kalshi/` på nettsiden) viser hva prediksjonsmarkedet Kalshi priser inn for BTC:
+sannsynlighet for høyere pris fredag og ved nyttår, fordelingen markedet venter, skjevhet mot ned- eller oppsiden,
+og hvor mye markedet betaler for å være innom et nivå før en frist, sammenlignet med en modell uten retning.
+Den evaluerer også ukemarkedet mot fasit etter hvert som fredagene passerer.
+
+Fanen er helt adskilt fra signalene:
+
+- Egen kode i `kalshi/`, egne avhengigheter i `kalshi/requirements.txt`, egne data i `kalshi/data/`.
+- Egen jobb, `.github/workflows/kalshi.yml`, som tar et øyeblikksbilde hver kveld kl. 23:40 UTC og bygger siden til `kalshi/public/`.
+- «Daglige signaler» kopierer bare `kalshi/public/` inn i nettsiden før publisering. Feiler Kalshi-jobben, publiseres resten som før.
+- Kalshis markedsdata er åpne og krever ingen nøkkel.
+
+Manuell kjøring: **Actions → Kalshi-sentiment → Run workflow**. Med «publish» på publiseres nettsiden med en gang.
+
+```bash
+pip install -r kalshi/requirements.txt
+python -m kalshi snapshot                    # øyeblikksbilde nå, evaluering og bygg av siden
+python -m kalshi backfill --since 2026-09-17 # fyll inn daglige øyeblikksbilder bakover
+python -m kalshi build                       # bygg bare siden
+```
+
+Historikk lenger tilbake enn ca. to måneder ligger i Kalshis historiske lag og hentes ikke av `backfill`.
