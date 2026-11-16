@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalshi-sentiment · Krypto-signaler</title>
+<meta name="robots" content="noindex">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --surface-2: #f0efec;
+  --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --ring: rgba(11,11,11,0.10);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;
+  --good: #006300; --bad: #d03b3b; --band: rgba(42,120,214,0.12);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232321;
+    --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+    --good: #0ca30c; --bad: #e66767; --band: rgba(57,135,229,0.16);
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 26px; margin: 0 0 2px; letter-spacing: -0.01em; }
+h2 { font-size: 19px; margin: 40px 0 12px; }
+h3 { font-size: 15px; margin: 0 0 6px; }
+p { margin: 0 0 10px; }
+.sub { color: var(--ink-2); font-size: 14px; }
+.muted { color: var(--muted); }
+.card { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 16px; }
+.banner { margin-top: 18px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--ring);
+  background: var(--surface); font-size: 16px; }
+.banner b { font-weight: 650; }
+.sitenav { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 18px; }
+.sitenav a { font-size: 14px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--ring);
+  background: var(--surface); color: var(--ink); text-decoration: none; }
+.sitenav a[aria-current="page"] { background: var(--ink); color: var(--page); border-color: var(--ink); }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 14px; }
+.big { font-size: 30px; font-weight: 700; line-height: 1.15; margin: 4px 0 2px; font-variant-numeric: tabular-nums; }
+dl.kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 8px 0 0; font-size: 14px; }
+dl.kv dt { color: var(--ink-2); }
+dl.kv dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+.grid2.two { grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); }
+.chart-box { position: relative; height: 260px; margin-top: 8px; }
+.chart-box.short { height: 200px; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); margin: 8px 0 0; }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.legend i.band { height: 10px; background: var(--band); }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap;
+  font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--ink-2); font-weight: 600; font-size: 13px; }
+.pos { color: var(--good); } .neg { color: var(--bad); }
+.method p, .method li { font-size: 14px; color: var(--ink-2); }
+.method ul { padding-left: 20px; margin: 6px 0 10px; }
+details summary { cursor: pointer; color: var(--ink-2); font-size: 14px; margin-top: 8px; }
+footer { margin-top: 48px; font-size: 13px; color: var(--muted); }
+a { color: var(--s1); }
+@media (max-width: 520px) { .big { font-size: 26px; } h1 { font-size: 22px; } }
+</style>
+</head>
+<body>
+<main>
+  <nav class="sitenav" aria-label="Faner">
+    <a href="../">Signaler</a>
+    <a href="./" aria-current="page">Kalshi-sentiment</a>
+  </nav>
+  <header>
+    <h1>Kalshi-sentiment for BTC</h1>
+    <p class="sub" id="subtitle"></p>
+  </header>
+  <div id="banner"></div>
+
+  <section class="cards" id="cards"></section>
+  <p class="sub" style="margin-top:12px">Prisene på Kalshi er sannsynligheter slik markedet setter dem, ikke en prognose.
+    Fanen kjøres av en egen jobb og påvirker ikke signalene på hovedsiden.</p>
+
+  <h2>Fordelingen markedet priser inn</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3 id="wk-title">Slutten av uken</h3>
+      <p class="sub">Sannsynlighet for at BTC er over hver pris. Prikken er dagens pris.</p>
+      <div class="chart-box"><canvas id="wk-chart"></canvas></div>
+    </div>
+    <div class="card">
+      <h3 id="ye-title">Nyttår</h3>
+      <p class="sub">Sannsynlighet per $5 000-intervall. Den mørke søylen inneholder dagens pris.</p>
+      <div class="chart-box"><canvas id="ye-chart"></canvas></div>
+    </div>
+  </div>
+
+  <h2>Vil BTC nå et nivå før fristen?</h2>
+  <p class="sub">«Modell» er sannsynligheten hvis BTC svinger tilfeldig uten retning, med volatiliteten fra ukemarkedet.
+    Markedet over modellen betyr at markedet betaler mer for den bevegelsen enn volatiliteten alene tilsier.</p>
+  <div class="card table-wrap"><table id="touch"></table></div>
+
+  <h2>Utvikling over tid</h2>
+  <div class="grid2 two">
+    <div class="card">
+      <h3>BTC-pris og nyttårsutsikten</h3>
+      <div class="chart-box"><canvas id="h-price"></canvas></div>
+      <div class="legend"><span><i id="lg-spot"></i>BTC-pris</span><span><i id="lg-med"></i>Nyttårsmedian</span><span><i class="band"></i>10–90 % for nyttår</span></div>
+    </div>
+    <div class="card">
+      <h3>Sannsynlighet for høyere pris fredag</h3>
+      <div class="chart-box"><canvas id="h-pup"></canvas></div>
+      <p class="sub" style="margin-top:8px">Over 50 % betyr at markedet heller mot opp.</p>
+    </div>
+    <div class="card">
+      <h3>Skjevhet i nyttårsfordelingen</h3>
+      <div class="chart-box short"><canvas id="h-skew"></canvas></div>
+      <p class="sub" style="margin-top:8px">Under null: lengre hale ned enn opp (målt i prosent fra medianen).</p>
+    </div>
+    <div class="card">
+      <h3>Krakkforsikring: dypeste nivå før nyttår</h3>
+      <div class="chart-box short"><canvas id="h-crash"></canvas></div>
+      <div class="legend"><span><i id="lg-cm"></i>Markedet</span><span><i id="lg-cmod"></i>Modell</span></div>
+    </div>
+  </div>
+
+  <h2>Har ukemarkedet truffet?</h2>
+  <p class="sub" id="eval-sub"></p>
+  <section class="cards" id="eval-cards"></section>
+  <div class="card table-wrap" style="margin-top:14px"><table id="eval-table"></table></div>
+
+  <h2>Metode og forbehold</h2>
+  <div class="card method">
+    <ul>
+      <li><b>BTC-pris</b> er startprisen (CF Benchmarks BRTI) i Kalshis 15-minuttersmarked som pågår ved øyeblikksbildet.</li>
+      <li><b>Ukemarkedet</b> er «BTC over $X fredag kl. 17 ET». Kurven gir fordelingen; median og 10–90 % leses rett av den.
+        Volatiliteten er en lognormal tilpasning til kurven, regnet om til årlig.</li>
+      <li><b>Nyttår</b> er intervallmarkedet for BTC-pris ved årsskiftet. Midtprisene skaleres så summen blir 100 %.
+        Skjevhet = ln(q90/median) − ln(median/q10).</li>
+      <li><b>Berøringsmarkeder</b> betaler ut hvis BTC er innom nivået før fristen. Modellen bruker speilingsprinsippet:
+        2 × P(slutt bortenfor nivået) for en pris uten retning.</li>
+      <li>Et øyeblikksbilde tas hver kveld kl. 23:40 UTC. Historikken før fanen ble satt opp er fylt inn fra Kalshis timescandles
+        for samme klokkeslett.</li>
+      <li>Ukemarkedet evalueres når fasiten er klar. Flere øyeblikksbilder deler samme fredag, så antall uavhengige utfall er antall uker.
+        Med få uker er resultatene svært usikre.</li>
+      <li>En egen analyse (17.09.–16.11.2026) fant at Kalshis korte BTC-markeder er godt kalibrert, med en klassisk longshot-bias,
+        og at ingen enkel strategi slo markedet etter spread og gebyr.</li>
+    </ul>
+  </div>
+
+  <footer>
+    Ikke finansiell rådgivning. <span id="foot-gen"></span>
+    · <a href="snapshots.csv">Rådata (øyeblikksbilder)</a> · <a href="latest.json">Rådata (siste)</a>
+    · <a href="https://github.com/Kvelliken/krypto-signaler/tree/main/kalshi">Kildekode</a>
+  </footer>
+</main>
+
+<script id="payload" type="application/json">__DATA_JSON__</script>
+<script>
+const D = JSON.parse(document.getElementById('payload').textContent);
+const L = D.latest || {}, H = D.history || [], E = D.evaluation || {};
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const nf = (x, d = 0) => x == null ? '–' : Number(x).toLocaleString('nb-NO', { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = (x, d = 0) => x == null ? '–' : nf(x * 100, d) + ' %';
+const spct = (x, d = 0) => x == null ? '–' : (x > 0 ? '+' : '') + nf(x * 100, d) + ' %';
+const usd = x => x == null ? '–' : nf(x, 0) + ' $';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const dnorm = s => s ? s.slice(8, 10) + '.' + s.slice(5, 7) + '.' : '–';
+const last = H.length ? H[H.length - 1] : {};
+Chart.defaults.font.family = 'system-ui, -apple-system, "Segoe UI", sans-serif';
+Chart.defaults.color = css('--ink-2');
+Chart.defaults.borderColor = css('--grid');
+const grid = { color: css('--grid') };
+
+// ---------- Topp ----------
+document.getElementById('subtitle').textContent = H.length
+  ? `Øyeblikksbilde ${last.ts.replace('T', ' ').replace(':00Z', ' UTC')} · BTC ${usd(last.spot)}`
+  : 'Ingen data ennå';
+document.getElementById('foot-gen').textContent = `Siden bygget ${D.generated}.`;
+
+function leaning(p) { return p == null ? 'ukjent' : p >= 0.55 ? 'heller mot opp' : p <= 0.45 ? 'heller mot ned' : 'er nøytralt'; }
+if (H.length) {
+  const skew = last.ye_skew == null ? '' : last.ye_skew < -0.05 ? ' Nyttårsfordelingen har tydelig lengst hale ned.'
+    : last.ye_skew > 0.05 ? ' Nyttårsfordelingen har lengst hale opp.' : ' Nyttårsfordelingen er omtrent symmetrisk.';
+  document.getElementById('banner').innerHTML = `<div class="banner"><b>Uken ${leaning(last.wk_pup)}:</b> `
+    + `${pct(last.wk_pup)} sjanse for høyere pris fredag ${dnorm(last.wk_close)}${skew}</div>`;
+}
+
+// ---------- Kort ----------
+const card = (title, big, rows, note = '') => `<div class="card"><h3>${title}</h3><div class="big">${big}</div>
+  <dl class="kv">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>${note ? `<p class="sub" style="margin:8px 0 0">${note}</p>` : ''}</div>`;
+const cards = [];
+if (last.wk_event) cards.push(card(`Høyere fredag ${dnorm(last.wk_close)}`, pct(last.wk_pup), [
+  ['Median', usd(last.wk_median)], ['80 % intervall', `${usd(last.wk_q10)} – ${usd(last.wk_q90)}`],
+  ['Opp 5 % eller mer', pct(last.wk_up5)], ['Ned 5 % eller mer', pct(last.wk_dn5)], ['Årlig volatilitet', pct(last.vol)]]));
+if (last.ye_event) cards.push(card('Høyere ved nyttår', pct(last.ye_pup), [
+  ['Median', usd(last.ye_median)], ['80 % intervall', `${usd(last.ye_q10)} – ${usd(last.ye_q90)}`],
+  ['Skjevhet', nf(last.ye_skew, 2)]]));
+if (last.mon_dn_level) cards.push(card(`Under ${usd(last.mon_dn_level)} før månedsslutt`, pct(last.mon_dn_p), [
+  ['Modell uten retning', pct(last.mon_dn_model)], ['Avstand', spct(last.mon_dn_level / last.spot - 1)]],
+  'Nærmeste nivå under dagens pris.'));
+if (last.crash_level) cards.push(card(`Under ${usd(last.crash_level)} før nyttår`, pct(last.crash_p, 1), [
+  ['Modell uten retning', pct(last.crash_model, 1)], ['Avstand', spct(last.crash_level / last.spot - 1)]],
+  'Dypeste nivå Kalshi tilbyr: hva markedet betaler for krakkforsikring.'));
+document.getElementById('cards').innerHTML = cards.join('');
+
+// ---------- Fordelinger ----------
+if (L.week) {
+  document.getElementById('wk-title').textContent = `Fredag ${dnorm(L.week.close)} kl. 17 ET`;
+  const pts = L.week.curve.map(([k, p]) => ({ x: k, y: p }));
+  const spotP = (() => { const c = L.week.curve; for (let i = 1; i < c.length; i++) if (c[i][0] >= L.spot)
+    return c[i - 1][1] + (c[i][1] - c[i - 1][1]) * (L.spot - c[i - 1][0]) / (c[i][0] - c[i - 1][0]); return null; })();
+  new Chart(document.getElementById('wk-chart'), {
+    type: 'scatter',
+    data: { datasets: [
+      { label: 'P(over)', data: pts, showLine: true, borderColor: css('--s1'), pointRadius: 0, borderWidth: 2 },
+      { label: 'I dag', data: spotP == null ? [] : [{ x: L.spot, y: spotP }], pointRadius: 5, backgroundColor: css('--s2') },
+    ] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false },
+      tooltip: { callbacks: { label: c => `${usd(c.parsed.x)}: ${pct(c.parsed.y)}` } } },
+      scales: { x: { type: 'linear', grid, ticks: { callback: v => nf(v / 1000) + 'k' } },
+        y: { min: 0, max: 1, grid, ticks: { callback: v => pct(v) } } } },
+  });
+}
+if (L.year) {
+  document.getElementById('ye-title').textContent = `Nyttår (${dnorm(L.year.close)})`;
+  const b = L.year.buckets.filter(([lo, hi]) => hi != null && lo >= 20000 && hi <= 150001);
+  new Chart(document.getElementById('ye-chart'), {
+    type: 'bar',
+    data: { labels: b.map(([lo]) => nf(lo / 1000) + 'k'),
+      datasets: [{ data: b.map(x => x[2]), borderRadius: 3,
+        backgroundColor: b.map(([lo, hi]) => L.spot >= lo && L.spot < hi ? css('--s2') : css('--s1')) }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false },
+      tooltip: { callbacks: { title: c => { const [lo, hi] = b[c[0].dataIndex]; return `${usd(lo)} – ${usd(hi)}`; },
+        label: c => pct(c.parsed.y, 1) } } },
+      scales: { x: { grid: { display: false }, ticks: { autoSkip: true, maxRotation: 0 } },
+        y: { grid, ticks: { callback: v => pct(v) } } } },
+  });
+}
+
+// ---------- Berøring ----------
+(() => {
+  const t = document.getElementById('touch');
+  const rows = (L.touch || []).filter(r => r.marked >= 0.01 || (r.modell ?? 0) >= 0.01);
+  if (!rows.length) { t.innerHTML = '<tr><td>Ingen åpne berøringsmarkeder.</td></tr>'; return; }
+  t.innerHTML = '<thead><tr><th>Marked</th><th>Frist</th><th>Avstand</th><th>Markedet</th><th>Modell</th><th>Forskjell</th></tr></thead><tbody>'
+    + rows.map(r => { const d = r.modell == null ? null : r.marked - r.modell;
+      return `<tr><td>${r.retning === 'ned' ? 'Under' : 'Over'} ${usd(r.niva)}</td><td>${dnorm(r.frist)}</td><td>${spct(r.avstand)}</td>
+        <td>${pct(r.marked, 1)}</td><td>${pct(r.modell, 1)}</td>
+        <td class="${d == null ? '' : d > 0 ? 'neg' : 'pos'}">${d == null ? '–' : (d > 0 ? '+' : '') + nf(d * 100, 1) + ' pp'}</td></tr>`; }).join('')
+    + '</tbody>';
+})();
+
+// ---------- Historikk ----------
+const labels = H.map(r => dnorm(r.date));
+const line = (label, key, color, extra = {}) => ({ label, data: H.map(r => r[key]), borderColor: color, backgroundColor: color,
+  pointRadius: 0, borderWidth: 2, spanGaps: true, tension: 0, ...extra });
+const base = (yfmt, extra = {}) => ({ maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+  plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${yfmt(c.parsed.y)}` } } },
+  scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 8, maxRotation: 0 } }, y: { grid, ticks: { callback: yfmt }, ...extra } } });
+document.getElementById('lg-spot').style.background = css('--s2');
+document.getElementById('lg-med').style.background = css('--s1');
+document.getElementById('lg-cm').style.background = css('--s2');
+document.getElementById('lg-cmod').style.background = css('--muted');
+if (H.length) {
+  new Chart(document.getElementById('h-price'), { type: 'line', data: { labels, datasets: [
+    line('10 %', 'ye_q10', 'transparent', { fill: false, borderWidth: 0 }),
+    line('90 %', 'ye_q90', 'transparent', { fill: '-1', backgroundColor: css('--band'), borderWidth: 0 }),
+    line('Nyttårsmedian', 'ye_median', css('--s1')),
+    line('BTC', 'spot', css('--s2')),
+  ] }, options: base(v => nf(v / 1000) + 'k') });
+  new Chart(document.getElementById('h-pup'), { type: 'line', data: { labels, datasets: [
+    line('P(høyere fredag)', 'wk_pup', css('--s1')),
+    { label: '50 %', data: H.map(() => 0.5), borderColor: css('--axis'), borderDash: [4, 4], pointRadius: 0, borderWidth: 1 },
+  ] }, options: base(v => pct(v), { suggestedMin: 0.35, suggestedMax: 0.65 }) });
+  new Chart(document.getElementById('h-skew'), { type: 'line', data: { labels, datasets: [
+    line('Skjevhet', 'ye_skew', css('--s1')),
+    { label: '0', data: H.map(() => 0), borderColor: css('--axis'), borderDash: [4, 4], pointRadius: 0, borderWidth: 1 },
+  ] }, options: base(v => nf(v, 2)) });
+  new Chart(document.getElementById('h-crash'), { type: 'line', data: { labels, datasets: [
+    line('Markedet', 'crash_p', css('--s2')),
+    line('Modell', 'crash_model', css('--muted')),
+  ] }, options: base(v => pct(v, 1), { min: 0 }) });
+}
+
+// ---------- Evaluering ----------
+(() => {
+  const sub = document.getElementById('eval-sub');
+  if (!E.n) { sub.textContent = 'Ingen ukemarkeder er avgjort ennå.'; return; }
+  sub.textContent = `${E.n} øyeblikksbilder fordelt på ${E.events} fredager med kjent fasit. Brier-score måler treffsikkerhet (lavere er bedre); en mynt som alltid sier 50 % får 0,25.`;
+  document.getElementById('eval-cards').innerHTML = [
+    card('Brier-score', nf(E.brier, 3), [['Mynt (50 %)', nf(E.brier_flat, 3)], ['Skill mot mynt', nf(E.skill, 2)]],
+      E.skill > 0 ? 'Bedre enn mynt.' : 'Ikke bedre enn mynt.'),
+    card('Treff i 80 %-intervallet', pct(E.coverage80), [['Forventet', '80 %']],
+      'Hvor ofte fredagsprisen havnet mellom 10 %- og 90 %-kvantilen.'),
+    card('Når markedet hellet mot opp', pct(E.up_when_hi), [['Antall', nf(E.n_hi)], ['Gikk opp når det hellet ned', pct(E.up_when_lo)], ['Antall', nf(E.n_lo)]],
+      'Andel øyeblikksbilder der BTC faktisk endte høyere fredag.'),
+  ].join('');
+  const rows = H.filter(r => r.wk_outcome != null).slice(-21).reverse();
+  document.getElementById('eval-table').innerHTML = '<thead><tr><th>Dato</th><th>Fredag</th><th>BTC da</th><th>P(høyere)</th><th>80 % intervall</th><th>Fasit</th><th>Endring</th></tr></thead><tbody>'
+    + rows.map(r => { const ch = r.wk_outcome / r.spot - 1;
+      return `<tr><td>${dnorm(r.date)}</td><td>${dnorm(r.wk_close)}</td><td>${usd(r.spot)}</td><td>${pct(r.wk_pup)}</td>
+        <td>${usd(r.wk_q10)} – ${usd(r.wk_q90)}</td><td>${usd(r.wk_outcome)}</td><td class="${ch >= 0 ? 'pos' : 'neg'}">${spct(ch, 1)}</td></tr>`; }).join('')
+    + '</tbody>';
+})();
+</script>
+</body>
+</html>
