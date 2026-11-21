@@ -1,6 +1,6 @@
 {
-  "updated": "2026-11-20 07:39 UTC",
-  "data_date": "2026-11-19",
+  "updated": "2026-11-21 07:37 UTC",
+  "data_date": "2026-11-20",
   "strategies": {
     "BTC": {
       "type": "sma_band",
